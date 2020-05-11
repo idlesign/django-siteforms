@@ -1,0 +1,22 @@
+include AUTHORS
+include CHANGELOG
+include INSTALL
+include LICENSE
+include README.rst
+
+include docs/Makefile
+recursive-include docs *.rst
+recursive-include docs *.py
+recursive-include tests *
+
+recursive-include siteforms/locale *
+recursive-include siteforms/tests *
+recursive-include siteforms/migrations *.py
+recursive-include siteforms/templates *.html
+recursive-include siteforms/templatetags *.py
+recursive-include siteforms/management *.py
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * empty
+
