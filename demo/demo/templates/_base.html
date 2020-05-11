@@ -1,0 +1,25 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ request.lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>django-siteforms demo > {{ title }} > ({% get_current_language as LANGUAGE_CODE %}{{LANGUAGE_CODE}})</title>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+
+    {% include tpl_head %}
+
+    <style type="text/css">
+        #demo-navigation {
+            padding: 10px;
+        }
+    </style>
+
+</head>
+<body>
+
+    {% include 'demo_nav.html' %}
+    <h1>{{ title }}</h1>
+    {% block body %}{% endblock %}
+</body>
+</html>
