@@ -48,6 +48,7 @@ setup(
 
     tests_require=[
         'pytest',
+        'pytest-djangoapp',
         'pytest-datafixtures',
     ],
 
