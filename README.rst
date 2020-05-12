@@ -106,7 +106,7 @@ Now let's see how to tune our form.
         layout = {
             FORM: {
                 'basic': [  # First we place `basic` group.
-                    ['title', 'date_created'],  # These to fields go into a row.
+                    ['title', 'date_created'],  # These two fields go into a row.
                     'contents',  # This one field goes into a separate row.
                 ],
                 # We place all the rest fields into `other` group.
