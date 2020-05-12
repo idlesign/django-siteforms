@@ -200,7 +200,7 @@ class FormComposer:
     def _render_label(self, field: BoundField) -> str:
         label = field.label_tag(
             attrs=self._attrs_get_basic(self.attrs_labels, field),
-            label_suffix='' if isinstance(field.field.widget, CheckboxInput) else None
+            label_suffix=''
         )
         return f'{label}'
 
@@ -216,29 +216,38 @@ class FormComposer:
 
         return f'<{help_tag} {flatatt(attrs)}>{help_text}</{help_tag}>'
 
+    def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str) -> str:
+
+        out = self._attrs_get_basic(self.layout, fld)[_VALUE].format_map(FormatDict(
+            label=label,
+            field=field,
+            help=hint,
+        ))
+
+        return out
+
+    def _apply_wrapper(self, *, fld: BoundField, content) -> str:
+
+        out = self._attrs_get_basic(self.wrappers, fld)[_VALUE].format_map(FormatDict(
+            field=content,
+        ))
+
+        return out
+
     def _render_field_box(self, field: BoundField) -> str:
 
-        layout = self._attrs_get_basic(self.layout, field)
-
         label = ''
-        help = ''
+        hint = ''
 
         if self.opt_render_labels:
             label = self._render_label(field)
 
         if self.opt_render_help:
-            help = self._render_help(field)
+            hint = self._render_help(field)
 
-        out = layout[_VALUE].format_map(FormatDict(
-            label=label,
-            field=self._render_field(field),
-            help=help,
-        ))
-
-        wrapper = self._attrs_get_basic(self.wrappers, field)
-        out = wrapper[_VALUE].format_map(FormatDict(
-            field=out,
-        ))
+        field_str = self._render_field(field)
+        out = self._apply_layout(fld=field, field=field_str, label=label, hint=hint)
+        out = self._apply_wrapper(fld=field, content=out)
 
         return out
 
