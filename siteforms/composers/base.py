@@ -107,10 +107,7 @@ class FormComposer:
                 if issubclass(base, FormComposer):
                     attrs_dict = merge_dict(getattr(base, attr), attrs_dict)
 
-            setattr(cls, attr, cls._hook_enrich_attr(
-                attr=attr,
-                value=merge_dict(getattr(cls, attr), attrs_dict)
-            ))
+            setattr(cls, attr, merge_dict(getattr(cls, attr), attrs_dict))
 
         enrich_attr('attrs')
         enrich_attr('attrs_labels')
@@ -118,11 +115,6 @@ class FormComposer:
         enrich_attr('wrappers')
         enrich_attr('layout')
         cls._hook_init_subclass()
-
-    @classmethod
-    def _hook_enrich_attr(cls, *, attr: str, value: dict):
-        """"""
-        return value
 
     @classmethod
     def _hook_init_subclass(cls):
