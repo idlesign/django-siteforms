@@ -76,7 +76,6 @@ class Bootstrap4(FormComposer):
             cls.wrappers.update({
                 FileInput: _file_wrapper,
                 ClearableFileInput: _file_wrapper,
-                CheckboxInput: cls._get_wrapper_checkbox,
             })
 
         columns = cls.opt_columns
@@ -91,24 +90,12 @@ class Bootstrap4(FormComposer):
                 ALL_FIELDS: {'class': 'col-form-label'},
             })
 
-            _wrapper = '<div class="form-group row">{field}</div>'
+            cls.layout.pop(CheckboxInput, None)
 
             cls.wrappers.update({
                 ALL_ROWS: '{fields}',
-                ALL_FIELDS: _wrapper,
-                CheckboxInput: _wrapper,
+                ALL_FIELDS: '{field}',
             })
-
-            cls.layout.update({
-                ALL_FIELDS: cls._get_layout_columns,
-                CheckboxInput: cls._get_layout_columns,
-            })
-
-    def _get_layout_columns(self, field: BoundField) -> str:
-        label, control = self.opt_columns
-        if isinstance(field.field.widget, CheckboxInput):
-            return f'<div class="{label}"></div><div class="{control}">{{field}}{{label}}{{help}}</div>'
-        return f'<div class="{label}">{{label}}</div><div class="{control}">{{field}}{{help}}</div>'
 
     def _get_attr_form(self) -> Optional[str]:
         # todo maybe needs-validation and novalidate
@@ -127,13 +114,43 @@ class Bootstrap4(FormComposer):
             return 'form-row mx-0'
         return None
 
-    def _get_wrapper_checkbox(self, field: BoundField) -> Optional[str]:
+    def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str) -> str:
 
-        if self.opt_custom_controls:
-            variant = 'custom-switch' if self.opt_checkbox_switch else 'custom-checkbox'
-            return f'<div class="custom-control mx-1 {variant}">{{field}}</div>'  # todo +custom-control-inline
+        opt_columns = self.opt_columns
+        opt_custom = self.opt_custom_controls
+        widget = fld.field.widget
 
-        return '<div class="form-group form-check">{field}</div>'  # todo +form-check-inline
+        is_cb = isinstance(widget, CheckboxInput)
+        is_file = isinstance(widget, (FileInput, ClearableFileInput))
+
+        if is_cb:
+
+            if opt_custom:
+                variant = 'custom-switch' if self.opt_checkbox_switch else 'custom-checkbox'
+                css = f'custom-control mx-1 {variant}'  # todo +custom-control-inline
+
+            else:
+                css = 'form-check'  # todo +form-check-inline
+
+            field = f'<div class="{css}">{field}{label}{hint}</div>'
+            label = ''
+            hint = ''
+
+        if opt_columns and not (opt_custom and is_file):
+            col_label, col_control = opt_columns
+            label = f'<div class="{col_label}">{label}</div>'
+            field = f'<div class="{col_control}">{field}{hint}</div>'
+            hint = ''
+
+        return super()._apply_layout(fld=fld, field=field, label=label, hint=hint)
+
+    def _apply_wrapper(self, *, fld: BoundField, content) -> str:
+        wrapped = super()._apply_wrapper(fld=fld, content=content)
+
+        if self.opt_columns:
+            wrapped = f'<div class="form-group row">{wrapped}</div>'
+
+        return wrapped
 
     def _render_field(self, field: BoundField, attrs: TypeAttrs = None) -> str:
         attrs = attrs or self._attrs_get_basic(self.attrs, field)
@@ -205,5 +222,4 @@ class Bootstrap4(FormComposer):
         # todo invalida feedback
         # <div class="valid-feedback">Looks good!</div><div class="invalid-feedback">Please choose a username.</div>
         ALL_FIELDS: '<div class="form-group mx-1">{field}</div>',
-        CheckboxInput: _get_wrapper_checkbox,
     }
