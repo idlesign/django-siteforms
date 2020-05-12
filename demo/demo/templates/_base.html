@@ -13,13 +13,19 @@
         #demo-navigation {
             padding: 10px;
         }
+        #opts {
+            font-size: 12px;
+        }
+        .opt{
+            margin-right: 10px;
+        }
     </style>
 
 </head>
 <body>
 
     {% include 'demo_nav.html' %}
-    <h1>{{ title }}</h1>
+    <h1 align="center">{{ title }}</h1>
     {% block body %}{% endblock %}
 </body>
 </html>

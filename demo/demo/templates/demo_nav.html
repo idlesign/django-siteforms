@@ -3,13 +3,9 @@
     {% for href, title in nav_items.items %}
         <a href="?theme={{ href }}&{% for opt_name, opt_val in opts.items %}{{ opt_name }}={{ opt_val }}&{% endfor %}">{{ title }}</a> &nbsp;|&nbsp;
     {% endfor %}
-    <div>
+    <div id="opts">
         {% for opt in opts %}
-            {{ opt }}:
-            <a href="{{ url }}&{{ opt }}=1">on</a>
-            /
-            <a href="{{ url }}&{{ opt }}=0">off</a>
-            |
+            <span class="opt">{{ opt }}: <a href="{{ url }}&{{ opt }}=1">on</a> <a href="{{ url }}&{{ opt }}=0">off</a> |</span>
         {% endfor %}
     </div>
     <hr>
