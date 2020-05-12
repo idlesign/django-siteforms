@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Union
 
 from django.forms import FileInput, ClearableFileInput, CheckboxInput, BoundField, Select, SelectMultiple
 
@@ -14,6 +14,16 @@ class Bootstrap4(FormComposer):
 
     opt_form_inline: bool = False
     """Make fields inline."""
+
+    opt_columns: Union[bool, Tuple[str, str]] = False
+    """Enabled two-columns mode. 
+    
+    Excepts a columns tuple: 
+        (label_columns_count, control_columns_count).
+        
+    If `True` default tuple ('col-2', 'col-10') is used.
+        
+    """
 
     opt_custom_controls: bool = False
     """Use custom controls from Bootstrap 4."""
@@ -68,6 +78,37 @@ class Bootstrap4(FormComposer):
                 ClearableFileInput: _file_wrapper,
                 CheckboxInput: cls._get_wrapper_checkbox,
             })
+
+        columns = cls.opt_columns
+
+        if columns:
+
+            if columns is True:
+                columns = ('col-2', 'col-10')
+                cls.opt_columns = columns
+
+            cls.attrs_labels.update({
+                ALL_FIELDS: {'class': 'col-form-label'},
+            })
+
+            _wrapper = '<div class="form-group row">{field}</div>'
+
+            cls.wrappers.update({
+                ALL_ROWS: '{fields}',
+                ALL_FIELDS: _wrapper,
+                CheckboxInput: _wrapper,
+            })
+
+            cls.layout.update({
+                ALL_FIELDS: cls._get_layout_columns,
+                CheckboxInput: cls._get_layout_columns,
+            })
+
+    def _get_layout_columns(self, field: BoundField) -> str:
+        label, control = self.opt_columns
+        if isinstance(field.field.widget, CheckboxInput):
+            return f'<div class="{label}"></div><div class="{control}">{{field}}{{label}}{{help}}</div>'
+        return f'<div class="{label}">{{label}}</div><div class="{control}">{{field}}{{help}}</div>'
 
     def _get_attr_form(self) -> Optional[str]:
         # todo maybe needs-validation and novalidate
@@ -165,34 +206,4 @@ class Bootstrap4(FormComposer):
         # <div class="valid-feedback">Looks good!</div><div class="invalid-feedback">Please choose a username.</div>
         ALL_FIELDS: '<div class="form-group mx-1">{field}</div>',
         CheckboxInput: _get_wrapper_checkbox,
-    }
-
-
-class Bootstrap4Columns(Bootstrap4):
-    """Mixin that allows two-columns form layout: labels column + controls column."""
-
-    opt_columns: Tuple[str, str] = ('col-2', 'col-10')
-    """Columns tuple: (label_columns_count, control_columns_count)."""
-
-    _wrapper = '<div class="form-group row">{field}</div>'
-
-    def _get_layout_columns(self, field: BoundField) -> str:
-        label, control = self.opt_columns
-        if isinstance(field.field.widget, CheckboxInput):
-            return f'<div class="{label}"></div><div class="{control}">{{field}}{{label}}{{help}}</div>'
-        return f'<div class="{label}">{{label}}</div><div class="{control}">{{field}}{{help}}</div>'
-
-    attrs_labels: TypeAttrs = {
-        ALL_FIELDS: {'class': 'col-form-label'},
-    }
-
-    wrappers = {
-        ALL_ROWS: '{fields}',
-        ALL_FIELDS: _wrapper,
-        CheckboxInput: _wrapper,
-    }
-
-    layout = {
-        ALL_FIELDS: _get_layout_columns,
-        CheckboxInput: _get_layout_columns,
     }
