@@ -48,6 +48,9 @@ class FormComposer:
     opt_render_form: bool = True
     """Render form tag."""
 
+    opt_label_colon: bool = True
+    """Whether to render colons after label's texts."""
+
     opt_render_labels: bool = True
     """Render label elements."""
 
@@ -200,7 +203,13 @@ class FormComposer:
     def _render_label(self, field: BoundField) -> str:
         label = field.label_tag(
             attrs=self._attrs_get_basic(self.attrs_labels, field),
-            label_suffix=''
+            label_suffix=(
+                # Get rid of colons entirely.
+                '' if not self.opt_label_colon else (
+                    # Or deduce...
+                    '' if isinstance(field.field.widget, CheckboxInput) else None
+                )
+            )
         )
         return f'{label}'
 
