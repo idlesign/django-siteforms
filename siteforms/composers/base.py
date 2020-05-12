@@ -1,18 +1,21 @@
 from collections import defaultdict
 from functools import partial
-from typing import Dict, Any, Optional, Union, List
+from typing import Dict, Any, Optional, Union, List, Type
 
 from django.forms import BoundField, CheckboxInput, Form
 from django.forms.utils import flatatt
+from django.forms.widgets import Input
 from django.middleware.csrf import get_token
 from django.utils.translation import gettext_lazy as _
+
+from ..utils import merge_dict
 
 if False:  # pragma: nocover
     from ..toolbox import SiteformsMixin  # noqa
 
 # todo hidden fields
 
-TypeAttrs = Dict[str, Any]
+TypeAttrs = Dict[Union[str, Type[Input]], Any]
 
 
 ALL_FIELDS = '__fields__'
@@ -97,24 +100,6 @@ class FormComposer:
         # Implements attributes enrichment - inherits attrs values from parents.
         super().__init_subclass__()
 
-        def merge_dict(src: Optional[dict], dst: Union[dict, str]) -> dict:
-            if src is None:
-                src = {}
-
-            if isinstance(dst, str):
-                # Strings are possible when base layout (e.g. ALL_FIELDS)
-                # replaced by user-defined layout.
-                return src.copy()
-
-            out = dst.copy()
-
-            for k, v in src.items():
-                if isinstance(v, dict):
-                    v = merge_dict(v, dst.setdefault(k, {}))
-                out[k] = v
-
-            return out
-
         def enrich_attr(attr: str):
             attrs_dict = {}
 
@@ -122,13 +107,26 @@ class FormComposer:
                 if issubclass(base, FormComposer):
                     attrs_dict = merge_dict(getattr(base, attr), attrs_dict)
 
-            setattr(cls, attr, merge_dict(getattr(cls, attr), attrs_dict))
+            setattr(cls, attr, cls._hook_enrich_attr(
+                attr=attr,
+                value=merge_dict(getattr(cls, attr), attrs_dict)
+            ))
 
         enrich_attr('attrs')
         enrich_attr('attrs_labels')
         enrich_attr('attrs_help')
         enrich_attr('wrappers')
         enrich_attr('layout')
+        cls._hook_init_subclass()
+
+    @classmethod
+    def _hook_enrich_attr(cls, *, attr: str, value: dict):
+        """"""
+        return value
+
+    @classmethod
+    def _hook_init_subclass(cls):
+        """"""
 
     def _get_attr_aria_describedby(self, field: BoundField) -> Optional[str]:
         if self.opt_render_help:

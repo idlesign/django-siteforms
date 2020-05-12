@@ -1,5 +1,5 @@
 from siteforms.composers.base import FormComposer
-from siteforms.composers.bootstrap4 import Bootstrap4, Bootstrap4Custom, Bootstrap4Columns, FORM, ALL_FIELDS
+from siteforms.composers.bootstrap4 import Bootstrap4, Bootstrap4Columns, FORM, ALL_FIELDS
 from siteforms.toolbox import ModelForm
 from .models import Article
 from .utils import render_themed
@@ -8,7 +8,6 @@ from .utils import render_themed
 THEMES = {
     'none': ('No CSS', (FormComposer,)),
     'bootstrap4': ('Bootstrap 4', (Bootstrap4,)),
-    'bootstrap4custom': ('Bootstrap 4 Custom Controls', (Bootstrap4Custom,)),
     'bootstrap4columns': ('Bootstrap 4 Columns', (Bootstrap4Columns,)),
 }
 
@@ -36,6 +35,10 @@ opts = {
     'opt_render_help': (True, False),
     'opt_placeholder_label': (True, False),
     'opt_placeholder_help': (True, False),
+
+    # bs4
+    'opt_custom_controls': (True, False),
+    'opt_checkbox_switch': (True, False),
 }
 
 

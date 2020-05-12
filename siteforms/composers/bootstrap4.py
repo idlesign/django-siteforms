@@ -15,6 +15,12 @@ class Bootstrap4(FormComposer):
     opt_form_inline: bool = False
     """Make fields inline."""
 
+    opt_custom_controls: bool = False
+    """Use custom controls from Bootstrap 4."""
+
+    opt_checkbox_switch: bool = False
+    """Use switches for checkboxes."""
+
     opt_size: str = SIZE_NORMAL
     """Apply size to form elements."""
 
@@ -26,6 +32,42 @@ class Bootstrap4(FormComposer):
 
     _size_mod: Tuple[str, ...] = ('col-form-label', 'form-control', 'input-group')
     _file_cls = {'class': 'form-control-file'}
+
+    @classmethod
+    def _hook_init_subclass(cls):
+        super()._hook_init_subclass()
+
+        if cls.opt_custom_controls:
+
+            cls._size_mod = tuple(list(cls._size_mod) + [
+                'custom-select',
+            ])
+
+            cls._file_cls = {'class': 'custom-file-input'}
+
+            _file_label = {'class': 'custom-file-label'}
+            _file_wrapper = '<div class="custom-file mx-1">{field}</div>'
+            _select_cls = {'class': 'custom-select'}
+
+            cls.attrs.update({
+                FileInput: cls._file_cls,
+                ClearableFileInput: cls._file_cls,
+                Select: _select_cls,
+                SelectMultiple: _select_cls,
+                CheckboxInput: {'class': 'custom-control-input'},
+            })
+
+            cls.attrs_labels.update({
+                FileInput: _file_label,
+                ClearableFileInput: _file_label,
+                CheckboxInput: {'class': 'custom-control-label'},
+            })
+
+            cls.wrappers.update({
+                FileInput: _file_wrapper,
+                ClearableFileInput: _file_wrapper,
+                CheckboxInput: cls._get_wrapper_checkbox,
+            })
 
     def _get_attr_form(self) -> Optional[str]:
         # todo maybe needs-validation and novalidate
@@ -43,6 +85,14 @@ class Bootstrap4(FormComposer):
         if len(fields) > 1:
             return 'form-row mx-0'
         return None
+
+    def _get_wrapper_checkbox(self, field: BoundField) -> Optional[str]:
+
+        if self.opt_custom_controls:
+            variant = 'custom-switch' if self.opt_checkbox_switch else 'custom-checkbox'
+            return f'<div class="custom-control mx-1 {variant}">{{field}}</div>'  # todo +custom-control-inline
+
+        return '<div class="form-group form-check">{field}</div>'  # todo +form-check-inline
 
     def _render_field(self, field: BoundField, attrs: TypeAttrs = None) -> str:
         attrs = attrs or self._attrs_get_basic(self.attrs, field)
@@ -114,7 +164,7 @@ class Bootstrap4(FormComposer):
         # todo invalida feedback
         # <div class="valid-feedback">Looks good!</div><div class="invalid-feedback">Please choose a username.</div>
         ALL_FIELDS: '<div class="form-group mx-1">{field}</div>',
-        CheckboxInput: '<div class="form-group form-check">{field}</div>',  # todo +form-check-inline
+        CheckboxInput: _get_wrapper_checkbox,
     }
 
 
@@ -145,45 +195,4 @@ class Bootstrap4Columns(Bootstrap4):
     layout = {
         ALL_FIELDS: _get_layout_columns,
         CheckboxInput: _get_layout_columns,
-    }
-
-
-class Bootstrap4Custom(Bootstrap4):
-    """Bootstrap 4 theming composer with some custom elements."""
-
-    opt_checkbox_switch: bool = True
-    """Use switches for checkboxes."""
-
-    _size_mod: Tuple[str, ...] = tuple(list(Bootstrap4._size_mod) + [
-        'custom-select',
-    ])
-
-    _file_cls = {'class': 'custom-file-input'}
-    _file_label = {'class': 'custom-file-label'}
-    _file_wrapper = '<div class="custom-file mx-1">{field}</div>'
-    _select_cls = {'class': 'custom-select'}
-
-    def _get_wrapper_checkbox(self, field: BoundField) -> Optional[str]:
-        variant = "custom-switch" if self.opt_checkbox_switch else "custom-checkbox"
-        # todo +custom-control-inline
-        return f'<div class="custom-control mx-1 {variant}">{{field}}</div>'
-
-    attrs: TypeAttrs = {
-        FileInput: _file_cls,
-        ClearableFileInput: _file_cls,
-        Select: _select_cls,
-        SelectMultiple: _select_cls,
-        CheckboxInput: {'class': 'custom-control-input'},
-    }
-
-    attrs_labels: TypeAttrs = {
-        FileInput: _file_label,
-        ClearableFileInput: _file_label,
-        CheckboxInput: {'class': 'custom-control-label'},
-    }
-
-    wrappers: TypeAttrs = {
-        FileInput: _file_wrapper,
-        ClearableFileInput: _file_wrapper,
-        CheckboxInput: _get_wrapper_checkbox,
     }
