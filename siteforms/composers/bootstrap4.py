@@ -37,7 +37,7 @@ class Bootstrap4(FormComposer):
     opt_help_tag: str = 'small'
     """Tag to be used for hints."""
 
-    opt_disabled_plaintext: bool = True
+    opt_disabled_plaintext: bool = False
     """Render disabled fields as plain text."""
 
     _size_mod: Tuple[str, ...] = ('col-form-label', 'form-control', 'input-group')
