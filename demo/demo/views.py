@@ -82,14 +82,10 @@ def index(request):
         hidden_fields={'to_hide'},
     ))
 
-    article = Article(title='dumdum')
-
-    form1 = Form(request=request, src='POST', instance=article)
+    form1 = Form(request=request, src='POST')
 
     if form1.is_valid():
-        a = 1
-    else:
-        a = 1
+        pass
 
     context = {
         'title': title,

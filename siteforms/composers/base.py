@@ -67,6 +67,9 @@ class FormComposer:
     opt_submit: str = _('Submit')
     """Submit button text."""
 
+    opt_submit_name: str = '__submit'
+    """Submit button name."""
+
     ########################################################
 
     attrs_labels: TypeAttrs = None
@@ -360,7 +363,7 @@ class FormComposer:
         get_attr = self._attrs_get
         return self._format_value(
             get_attr(self.wrappers, SUBMIT),
-            submit=f'<button type="submit" {flatatt(get_attr(self.attrs, SUBMIT))}>{self.opt_submit}</button>'
+            submit=f'<button type="submit" name="{self.opt_submit_name}" {flatatt(get_attr(self.attrs, SUBMIT))}>{self.opt_submit}</button>'
         )
 
     def render(self) -> str:

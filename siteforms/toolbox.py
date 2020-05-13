@@ -1,6 +1,7 @@
 from typing import Type, Set
 
 from django.forms import ModelForm as _ModelForm, HiddenInput
+from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
 if False:  # pragma: nocover
@@ -18,14 +19,23 @@ class SiteformsMixin:
 
     Composer: Type['FormComposer'] = None
 
-    def __init__(self, *args, request=None, src=None, **kwargs):
+    def __init__(self, *args, request: HttpRequest = None, src: str = None, **kwargs):
+
         self.src = src
+        """Form data source. E.g.: POST, GET."""
+
         self.request = request
+        """Django request object."""
+
+        self.is_submitted: bool = False
+        """Whether this form is submitted and uses th submitted data."""
 
         # Try to load data from custom course if no model instance provided.
         instance = kwargs.get('instance')
         if not instance and (src and request):
-            kwargs['data'] = getattr(request, src)
+            data = getattr(request, src)
+            self.is_submitted = self.Composer.opt_submit_name in data
+            kwargs['data'] = data
 
         super().__init__(*args, **kwargs)
 

@@ -157,9 +157,7 @@ class Bootstrap4(FormComposer):
 
         css = attrs.get('class', '')
 
-        if self.form.data:
-            # Only if data submitted.
-
+        if self.form.is_submitted:
             if field.errors:
                 css += ' is-invalid'
             else:
