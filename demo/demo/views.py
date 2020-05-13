@@ -79,9 +79,12 @@ def index(request):
         Composer=type('Composer', composer, composer_options),
         Meta=Form1Meta,
         disabled_fields={'dummy'},
+        hidden_fields={'to_hide'},
     ))
 
-    form1 = Form(request=request, src='POST')
+    article = Article(title='dumdum')
+
+    form1 = Form(request=request, src='POST', instance=article)
 
     if form1.is_valid():
         a = 1

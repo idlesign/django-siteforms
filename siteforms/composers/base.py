@@ -245,6 +245,9 @@ class FormComposer:
 
     def _render_field_box(self, field: BoundField) -> str:
 
+        if field.is_hidden:
+            return str(field)
+
         label = ''
         hint = ''
 
@@ -295,8 +298,6 @@ class FormComposer:
         form = self.form
 
         # todo
-        visible = form.visible_fields()
-        hidden = form.hidden_fields()
         multipart = form.is_multipart()
 
         fields = {name: render_field_box(form[name]) for name in form.fields}

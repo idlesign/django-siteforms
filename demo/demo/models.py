@@ -3,9 +3,11 @@ from django.db import models
 
 class Article(models.Model):
 
-    date_created = models.DateTimeField('Created', auto_created=True)
+    date_created = models.DateTimeField('Created', auto_created=True, blank=True)
 
     title = models.CharField('Title', max_length=200, help_text='Short descriptive text')
+
+    to_hide = models.CharField('To hide', max_length=10, help_text='Secret field', default='yes', blank=True)
 
     dummy = models.CharField('Dummy', max_length=100, help_text='This is just a dummy', default='dummy', blank=True)
 
