@@ -84,6 +84,7 @@ class FormComposer:
         ALL_FIELDS: '<span>{field}</span>',
         ALL_ROWS: '<div {attrs}>{fields}</div>',
         ALL_GROUPS: '<fieldset {attrs}><legend>{title}</legend>{rows}</fieldset>',
+        SUBMIT: '{submit}'
     }
     """Wrappers for fields and groups."""
 
@@ -225,23 +226,22 @@ class FormComposer:
 
         return f'<{help_tag} {flatatt(attrs)}>{help_text}</{help_tag}>'
 
-    def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str) -> str:
+    def _format_value(self, src: dict, **kwargs) -> str:
+        return src[_VALUE].format_map(FormatDict(**kwargs))
 
-        out = self._attrs_get_basic(self.layout, fld)[_VALUE].format_map(FormatDict(
+    def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str) -> str:
+        return self._format_value(
+            self._attrs_get_basic(self.layout, fld),
             label=label,
             field=field,
             help=hint,
-        ))
-
-        return out
+        )
 
     def _apply_wrapper(self, *, fld: BoundField, content) -> str:
-
-        out = self._attrs_get_basic(self.wrappers, fld)[_VALUE].format_map(FormatDict(
+        return self._format_value(
+            self._attrs_get_basic(self.wrappers, fld),
             field=content,
-        ))
-
-        return out
+        )
 
     def _render_field_box(self, field: BoundField) -> str:
 
@@ -266,27 +266,27 @@ class FormComposer:
         get_attrs = self._attrs_get
         attrs = self.attrs
         wrappers = self.wrappers
+        format_value = self._format_value
 
         def get_group_params(container: dict) -> dict:
             get_params = partial(get_attrs, container)
             return {**get_params(ALL_GROUPS), **get_params(alias)}
 
         group_attrs = get_group_params(attrs)
-        group_wrapper = get_group_params(wrappers)[_VALUE]
 
-        row_wrapper = get_attrs(wrappers, ALL_ROWS)[_VALUE]
-
-        html = group_wrapper.format_map(FormatDict(
+        html = format_value(
+            get_group_params(wrappers),
             attrs=flatatt(group_attrs),
             title=title,
             rows='\n'.join(
-                row_wrapper.format_map(FormatDict(
+                format_value(
+                    get_attrs(wrappers, ALL_ROWS),
                     attrs=flatatt(get_attrs(attrs, ALL_ROWS, obj=fields)),
                     fields='\n'.join(fields),
-                ))
+                )
                 for fields in rows
             )
-        ))
+        )
 
         return html
 
@@ -349,6 +349,13 @@ class FormComposer:
 
         return '\n'.join(out)
 
+    def _render_submit(self) -> str:
+        get_attr = self._attrs_get
+        return self._format_value(
+            get_attr(self.wrappers, SUBMIT),
+            submit=f'<button type="submit" {flatatt(get_attr(self.attrs, SUBMIT))}>{self.opt_submit}</button>'
+        )
+
     def render(self) -> str:
         """Renders form to string."""
 
@@ -365,8 +372,6 @@ class FormComposer:
             if request:
                 csrf = f'<input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}">'
 
-            submit = f'<button type="submit" {flatatt(get_attr(SUBMIT))}>{self.opt_submit}</button>'
-
-            html = f"<form {flatatt(get_attr(FORM))}>{csrf}{html}{submit}</form>"
+            html = f"<form {flatatt(get_attr(FORM))}>{csrf}{html}{self._render_submit()}</form>"
 
         return html
