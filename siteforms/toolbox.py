@@ -37,24 +37,21 @@ class SiteformsMixin:
             self.is_submitted = self.Composer.opt_submit_name in data
             kwargs['data'] = data
 
+        self.disabled_fields = set(kwargs.pop('disabled_fields', None) or [])
+        self.hidden_fields = set(kwargs.pop('hidden_fields', None) or [])
+
         super().__init__(*args, **kwargs)
 
     def render(self):
         fields = self.fields  # noqa
 
-        disabled_fields = set(self.disabled_fields or [])
-        self.disabled_fields = disabled_fields
-
-        hidden_fields = set(self.hidden_fields or [])
-        self.hidden_fields = hidden_fields
-
         # Apply disabled.
-        for field_name in disabled_fields:
+        for field_name in self.disabled_fields:
             field = fields[field_name]
             field.disabled = True
 
         # Apply hidden.
-        for field_name in hidden_fields:
+        for field_name in self.hidden_fields:
             field = fields[field_name]
             field.widget = HiddenInput()
 

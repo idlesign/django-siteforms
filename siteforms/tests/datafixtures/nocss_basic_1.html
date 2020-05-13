@@ -1,0 +1,13 @@
+<form  enctype="multipart/form-data" method="POST"><span><label for="id_fchar">Fchar_name:</label><input type="text" name="fchar" maxlength="50" aria-describedby="id_fchar_help" required id="id_fchar"><small  id="id_fchar_help">fchar_help</small></span>
+<span><label for="id_fchoices">Fchoices_name:</label><select name="fchoices" aria-describedby="id_fchoices_help" required id="id_fchoices">
+  <option value="" selected>---------</option>
+
+  <option value="one">1</option>
+
+  <option value="two">2</option>
+
+</select><small  id="id_fchoices_help">fchoices_help</small></span>
+<span><input type="checkbox" name="fbool" aria-describedby="id_fbool_help" id="id_fbool"><label for="id_fbool">Fbool_name</label><small  id="id_fbool_help">fbool_help</small></span>
+<span><label for="id_ftext">Ftext_name:</label><textarea name="ftext" cols="40" rows="10" aria-describedby="id_ftext_help" required id="id_ftext">
+</textarea><small  id="id_ftext_help">ftext_help</small></span>
+<span><label for="id_ffile">Ffile_name:</label><input type="file" name="ffile" aria-describedby="id_ffile_help" required id="id_ffile"></span><button type="submit" name="__submit" >Submit</button></form>

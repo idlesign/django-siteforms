@@ -13,4 +13,4 @@ class Thing(models.Model):
         max_length=50, verbose_name='fchoices_name', help_text='fchoices_help', choices=CHOICES1.items())
     fbool = models.BooleanField(default=False, verbose_name='fbool_name', help_text='fbool_help')
     ftext = models.TextField(verbose_name='ftext_name', help_text='ftext_help')
-    ffile = models.FileField(verbose_name='ffile_name', help_text='ffile_help')
+    ffile = models.FileField(verbose_name='ffile_name')

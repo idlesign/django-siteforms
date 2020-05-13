@@ -36,7 +36,7 @@ _VALUE = '__value__'
 
 class FormatDict(dict):
 
-    def __missing__(self, key: str) -> str:
+    def __missing__(self, key: str) -> str:  # pragma: nocover
         return ''
 
 
@@ -163,7 +163,9 @@ class FormComposer:
     }
     """Attributes to apply to basic elements (form, fields, groups)."""
 
-    def _attrs_get(self, container: Dict[str, Any], key: str = None, *, obj: Any = None):
+    def _attrs_get(self, container: Optional[Dict[str, Any]], key: str = None, *, obj: Any = None):
+
+        container = container or {}
 
         if key is None:
             attrs = container
@@ -350,7 +352,7 @@ class FormComposer:
                 # all fields, no grouping
                 out.extend(fields.values())
 
-            else:
+            else:  # pragma: nocover
                 raise ValueError(f'Unsupported form layout macros: {form_layout}')
 
         elif isinstance(form_layout, dict):
@@ -367,7 +369,7 @@ class FormComposer:
                         # All the fields left as separate rows.
                         grouped[group_alias].extend([[field] for field in fields.values()])
 
-                    else:
+                    else:  # pragma: nocover
                         raise ValueError(f'Unsupported group layout macros: {rows}')
 
                 else:
