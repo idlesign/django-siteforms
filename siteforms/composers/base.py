@@ -13,8 +13,6 @@ from ..utils import merge_dict
 if False:  # pragma: nocover
     from ..toolbox import SiteformsMixin  # noqa
 
-# todo hidden fields
-
 TypeAttrs = Dict[Union[str, Type[Input]], Any]
 
 
@@ -134,9 +132,20 @@ class FormComposer:
             return field.label
         return None
 
+    def _get_attr_form_enctype(self):
+
+        if self.form.is_multipart():
+            return 'multipart/form-data'
+
+        return None
+
+    def _get_attr_form_method(self):
+        return self.form.src or 'POST'
+
     attrs: TypeAttrs = {
         FORM: {
-            'method': 'POST',  # todo multipart for files
+            'method': _get_attr_form_method,
+            'enctype': _get_attr_form_enctype,
         },
         ALL_FIELDS: {
             'aria-describedby': _get_attr_aria_describedby,
@@ -296,9 +305,6 @@ class FormComposer:
     def _render_layout(self) -> str:
         render_field_box = self._render_field_box
         form = self.form
-
-        # todo
-        multipart = form.is_multipart()
 
         fields = {name: render_field_box(form[name]) for name in form.fields}
 
