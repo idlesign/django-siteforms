@@ -202,7 +202,7 @@ class Bootstrap4(FormComposer):
         return out
 
     attrs: TypeAttrs = {
-        FORM: {'class': _get_attr_form, 'novalidate': ''},
+        FORM: {'class': _get_attr_form},
         SUBMIT: {'class': 'btn btn-primary mt-3'},  # todo control-group?
         ALL_FIELDS: {'class': 'form-control'},
         ALL_ROWS: {'class': _get_attr_rows},
