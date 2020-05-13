@@ -34,11 +34,14 @@ class Bootstrap4(FormComposer):
     opt_size: str = SIZE_NORMAL
     """Apply size to form elements."""
 
-    opt_help_tag: str = 'small'
-    """Tag to be used for hints."""
-
     opt_disabled_plaintext: bool = False
     """Render disabled fields as plain text."""
+
+    opt_feedback_tooltips: bool = False
+    """Whether to render feedback in tooltips."""
+
+    opt_tag_feedback: str = 'div'
+    """Tag to be used for feedback."""
 
     _size_mod: Tuple[str, ...] = ('col-form-label', 'form-control', 'input-group')
     _file_cls = {'class': 'form-control-file'}
@@ -114,7 +117,7 @@ class Bootstrap4(FormComposer):
             return 'form-row mx-0'
         return None
 
-    def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str) -> str:
+    def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str, feedback: str) -> str:
 
         opt_columns = self.opt_columns
         opt_custom = self.opt_custom_controls
@@ -132,17 +135,18 @@ class Bootstrap4(FormComposer):
             else:
                 css = 'form-check'  # todo +form-check-inline
 
-            field = f'<div class="{css}">{field}{label}{hint}</div>'
+            field = f'<div class="{css}">{field}{label}{feedback}{hint}</div>'
             label = ''
             hint = ''
+            feedback = ''
 
         if opt_columns and not (opt_custom and is_file):
             col_label, col_control = opt_columns
             label = f'<div class="{col_label}">{label}</div>'
-            field = f'<div class="{col_control}">{field}{hint}</div>'
+            field = f'<div class="{col_control}">{field}{feedback}{hint}</div>'
             hint = ''
 
-        return super()._apply_layout(fld=fld, field=field, label=label, hint=hint)
+        return super()._apply_layout(fld=fld, field=field, label=label, hint=hint, feedback=feedback)
 
     def _apply_wrapper(self, *, fld: BoundField, content) -> str:
         wrapped = super()._apply_wrapper(fld=fld, content=content)
@@ -152,16 +156,16 @@ class Bootstrap4(FormComposer):
 
         return wrapped
 
+    def _get_attr_feedback(self, field: BoundField):
+        return f"invalid-{'tooltip' if self.opt_feedback_tooltips else 'feedback'}"
+
     def _render_field(self, field: BoundField, attrs: TypeAttrs = None) -> str:
         attrs = attrs or self._attrs_get_basic(self.attrs, field)
 
         css = attrs.get('class', '')
 
         if self.form.is_submitted:
-            if field.errors:
-                css += ' is-invalid'
-            else:
-                css += ' is-valid'
+            css += ' is-invalid' if field.errors else ' is-valid'
 
         if self.opt_disabled_plaintext:
             is_disabled = field.name in self.form.disabled_fields
@@ -212,12 +216,14 @@ class Bootstrap4(FormComposer):
         ALL_FIELDS: {'class': 'form-text text-muted'},
     }
 
+    attrs_feedback: TypeAttrs = {
+        ALL_FIELDS: {'class': _get_attr_feedback},
+    }
+
     attrs_labels: TypeAttrs = {
         CheckboxInput: {'class': 'form-check-label'},
     }
 
     wrappers: TypeAttrs = {
-        # todo invalida feedback
-        # <div class="valid-feedback">Looks good!</div><div class="invalid-feedback">Please choose a username.</div>
         ALL_FIELDS: '<div class="form-group mx-1">{field}</div>',
     }

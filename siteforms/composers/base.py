@@ -61,8 +61,11 @@ class FormComposer:
     opt_placeholder_help: bool = False
     """Put hint (help text) into field's placeholders."""
 
-    opt_help_tag: str = 'small'
+    opt_tag_help: str = 'small'
     """Tag to be used for hints."""
+
+    opt_tag_feedback: str = 'span'
+    """Tag to be used for feedback."""
 
     opt_submit: str = _('Submit')
     """Submit button text."""
@@ -78,6 +81,9 @@ class FormComposer:
     attrs_help: TypeAttrs = None
     """Attributes to apply to hints."""
 
+    attrs_feedback: TypeAttrs = None
+    """Attributes to apply to feedback (validation notes)."""
+
     groups: Dict[str, str] = None
     """Map alias to group titles."""
 
@@ -91,8 +97,8 @@ class FormComposer:
 
     layout: TypeAttrs = {
         FORM: ALL_FIELDS,
-        ALL_FIELDS: '{label}{field}{help}',
-        CheckboxInput: '{field}{label}{help}',
+        ALL_FIELDS: '{label}{field}{feedback}{help}',
+        CheckboxInput: '{field}{label}{feedback}{help}',
     }
     """Layout instructions for fields and form."""
 
@@ -226,6 +232,23 @@ class FormComposer:
         )
         return f'{label}'
 
+    def _format_feedback_lines(self, errors: List) -> str:
+        return '\n'.join([f'<div>{error}</div>' for error in errors])
+
+    def _render_feedback(self, field: BoundField) -> str:
+
+        if not self.form.is_submitted:
+            return ''
+
+        errors = field.errors
+        if not errors:
+            return ''
+
+        attrs = self._attrs_get_basic(self.attrs_feedback, field)
+        tag = self.opt_tag_feedback
+
+        return f'<{tag} {flatatt(attrs)}>{self._format_feedback_lines(errors)}</{tag}>'
+
     def _render_help(self, field: BoundField) -> str:
         help_text = field.help_text
 
@@ -234,19 +257,20 @@ class FormComposer:
 
         attrs = self._attrs_get_basic(self.attrs_help, field)
         attrs['id'] = f'{field.id_for_label}_help'
-        help_tag = self.opt_help_tag
+        tag = self.opt_tag_help
 
-        return f'<{help_tag} {flatatt(attrs)}>{help_text}</{help_tag}>'
+        return f'<{tag} {flatatt(attrs)}>{help_text}</{tag}>'
 
     def _format_value(self, src: dict, **kwargs) -> str:
         return src[_VALUE].format_map(FormatDict(**kwargs))
 
-    def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str) -> str:
+    def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str, feedback: str) -> str:
         return self._format_value(
             self._attrs_get_basic(self.layout, fld),
             label=label,
             field=field,
             help=hint,
+            feedback=feedback,
         )
 
     def _apply_wrapper(self, *, fld: BoundField, content) -> str:
@@ -269,11 +293,15 @@ class FormComposer:
         if self.opt_render_help:
             hint = self._render_help(field)
 
-        field_str = self._render_field(field)
-        out = self._apply_layout(fld=field, field=field_str, label=label, hint=hint)
-        out = self._apply_wrapper(fld=field, content=out)
+        out = self._apply_layout(
+            fld=field,
+            field=self._render_field(field),
+            label=label,
+            hint=hint,
+            feedback=self._render_feedback(field),
+        )
 
-        return out
+        return self._apply_wrapper(fld=field, content=out)
 
     def _render_group(self, alias: str, *, rows: List[str]) -> str:
         title = self.groups.get(alias)
@@ -370,7 +398,7 @@ class FormComposer:
         """Renders form to string."""
 
         # todo global errors where to place?
-        # errors_global = form.non_field_errors()
+        # errors_global = self.form.non_field_errors()
 
         html = self._render_layout()
 
@@ -382,6 +410,12 @@ class FormComposer:
             if request:
                 csrf = f'<input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}">'
 
-            html = f"<form {flatatt(get_attr(FORM))}>{csrf}{html}{self._render_submit()}</form>"
+            html = (
+                f"<form {flatatt(get_attr(FORM))}>"
+                f"{csrf}"
+                f"{html}"
+                f"{self._render_submit()}"
+                "</form>"
+            )
 
         return html

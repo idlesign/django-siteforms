@@ -36,9 +36,10 @@ opts = {
     'opt_placeholder_help': (True, False),
 
     # bs4
+    'opt_columns': (True, False),
     'opt_custom_controls': (True, False),
     'opt_checkbox_switch': (True, False),
-    'opt_columns': (True, False),
+    'opt_feedback_tooltips': (True, False),
 }
 
 
