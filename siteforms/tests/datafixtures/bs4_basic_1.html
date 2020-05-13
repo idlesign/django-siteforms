@@ -1,4 +1,4 @@
-<form  method="POST" novalidate=""><div class="form-group mx-1"><label for="id_fchar">Fchar_name:</label><input type="text" name="fchar" maxlength="50" aria-describedby="id_fchar_help" class="form-control" required id="id_fchar"><small  class="form-text text-muted" id="id_fchar_help">fchar_help</small></div>
+<form  enctype="multipart/form-data" method="POST"><div class="form-group mx-1"><label for="id_fchar">Fchar_name:</label><input type="text" name="fchar" maxlength="50" aria-describedby="id_fchar_help" class="form-control" required id="id_fchar"><small  class="form-text text-muted" id="id_fchar_help">fchar_help</small></div>
 <div class="form-group mx-1"><label for="id_fchoices">Fchoices_name:</label><select name="fchoices" aria-describedby="id_fchoices_help" class="form-control" required id="id_fchoices">
   <option value="" selected>---------</option>
 
@@ -10,4 +10,4 @@
 <div class="form-group mx-1"><div class="form-check"><input type="checkbox" name="fbool" aria-describedby="id_fbool_help" class="form-check-input" id="id_fbool"><label class="form-check-label" for="id_fbool">Fbool_name</label><small  class="form-text text-muted" id="id_fbool_help">fbool_help</small></div></div>
 <div class="form-group mx-1"><label for="id_ftext">Ftext_name:</label><textarea name="ftext" cols="40" rows="10" aria-describedby="id_ftext_help" class="form-control" required id="id_ftext">
 </textarea><small  class="form-text text-muted" id="id_ftext_help">ftext_help</small></div>
-<div class="form-group mx-1"><label for="id_ffile">Ffile_name:</label><input type="file" name="ffile" aria-describedby="id_ffile_help" class="form-control-file" required id="id_ffile"><small  class="form-text text-muted" id="id_ffile_help">ffile_help</small></div><button type="submit"  class="btn btn-primary mt-3">Submit</button></form>
+<div class="form-group mx-1"><label for="id_ffile">Ffile_name:</label><input type="file" name="ffile" aria-describedby="id_ffile_help" class="form-control-file" required id="id_ffile"><small  class="form-text text-muted" id="id_ffile_help">ffile_help</small></div><button type="submit" name="__submit"  class="btn btn-primary mt-3">Submit</button></form>
