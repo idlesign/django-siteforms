@@ -13,13 +13,12 @@ class Bootstrap4(FormComposer):
     SIZE_LARGE = 'lg'
 
     opt_form_inline: bool = False
-    """Make fields inline."""
+    """Make form inline."""
 
     opt_columns: Union[bool, Tuple[str, str]] = False
     """Enabled two-columns mode. 
     
-    Excepts a columns tuple: 
-        (label_columns_count, control_columns_count).
+    Expects a columns tuple: (label_columns_count, control_columns_count).
         
     If `True` default tuple ('col-2', 'col-10') is used.
         
@@ -29,7 +28,7 @@ class Bootstrap4(FormComposer):
     """Use custom controls from Bootstrap 4."""
 
     opt_checkbox_switch: bool = False
-    """Use switches for checkboxes."""
+    """Use switches for checkboxes (if custom controls)."""
 
     opt_size: str = SIZE_NORMAL
     """Apply size to form elements."""

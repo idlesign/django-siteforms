@@ -93,7 +93,7 @@ class FormComposer:
         ALL_GROUPS: '<fieldset {attrs}><legend>{title}</legend>{rows}</fieldset>',
         SUBMIT: '{submit}'
     }
-    """Wrappers for fields and groups."""
+    """Wrappers for fields, groups, rows, submit button."""
 
     layout: TypeAttrs = {
         FORM: ALL_FIELDS,
@@ -161,7 +161,7 @@ class FormComposer:
             'aria-label': _get_attr_aria_label,
         },
     }
-    """Attributes to apply to basic elements (form, fields, groups)."""
+    """Attributes to apply to basic elements (form, fields, widget types, groups)."""
 
     def _attrs_get(self, container: Optional[Dict[str, Any]], key: str = None, *, obj: Any = None):
 

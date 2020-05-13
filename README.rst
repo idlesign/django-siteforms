@@ -17,9 +17,6 @@ https://github.com/idlesign/django-siteforms
     :target: https://coveralls.io/r/idlesign/django-siteforms
 
 
-**Work in progress. Stay tuned.**
-
-
 Description
 -----------
 
@@ -63,7 +60,8 @@ Let's show how to build a simple form.
     class MyForm(ModelForm):
         """This form will show us how siteforms works."""
         
-        disabled_fields = ['somefield']  # One way of disabling fields.
+        disabled_fields = {'somefield'}  # One way of disabling fields.
+        hidden_fields = {'otherfield'}  # One way of hiding fields.
 
         class Composer(Bootstrap4):
             """This will instruct siteforms to compose this
