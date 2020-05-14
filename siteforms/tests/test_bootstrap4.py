@@ -88,3 +88,4 @@ def test_bs4_form_inline(bs4_form_html):
 def test_bs4_groups(bs4_form_html, layout):
     html = bs4_form_html(layout)
     assert '<legend>MYBasicGroup</legend><div  class="form-row mx-0">' in html
+    assert '<legend></legend>' in html  # no-title group

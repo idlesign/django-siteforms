@@ -29,6 +29,7 @@ opts = {
                     ['title', 'date_created', 'author'],
                     'contents',
                 ],
+                '_': ['dummy'],
                 'other': ALL_FIELDS,
             }
         },

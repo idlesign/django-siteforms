@@ -23,6 +23,7 @@ def layout():
                     'ftext',
                 ],
                 'other': ALL_FIELDS,
+                '_': ['ffile'],
             }
         },
     )

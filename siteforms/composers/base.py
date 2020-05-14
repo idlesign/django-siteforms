@@ -306,7 +306,7 @@ class FormComposer:
         return self._apply_wrapper(fld=field, content=out)
 
     def _render_group(self, alias: str, *, rows: List[str]) -> str:
-        title = self.groups.get(alias)
+        title = self.groups.get(alias, '')
 
         get_attrs = self._attrs_get
         attrs = self.attrs
@@ -317,11 +317,9 @@ class FormComposer:
             get_params = partial(get_attrs, container)
             return {**get_params(ALL_GROUPS), **get_params(alias)}
 
-        group_attrs = get_group_params(attrs)
-
         html = format_value(
             get_group_params(wrappers),
-            attrs=flatatt(group_attrs),
+            attrs=flatatt(get_group_params(attrs)),
             title=title,
             rows='\n'.join(
                 format_value(

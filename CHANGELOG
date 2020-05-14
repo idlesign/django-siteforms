@@ -4,6 +4,7 @@ django-siteforms changelog
 
 Unreleased
 ----------
++ Allow groups without titles.
 + Bootstrap 4. Auto layout in rows.
 + Form data populated only if request method matches.
 * Exposed 'toolbox.Form'.

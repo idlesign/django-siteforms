@@ -58,3 +58,4 @@ def test_nocss_groups(nocss_form_html, layout):
     html = nocss_form_html(layout)
     assert '<legend>MYBasicGroup</legend>' in html
     assert '</fieldset>\n<fieldset ><legend>somethingmore</legend>' in html
+    assert '<legend></legend>' in html  # no-title group
