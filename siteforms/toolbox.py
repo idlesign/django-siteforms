@@ -33,8 +33,8 @@ class SiteformsMixin(BaseForm):
         self.is_submitted: bool = False
         """Whether this form is submitted and uses th submitted data."""
 
-        self.disabled_fields = set(kwargs.pop('disabled_fields', None) or [])
-        self.hidden_fields = set(kwargs.pop('hidden_fields', None) or [])
+        self.disabled_fields = set(kwargs.pop('disabled_fields', self.disabled_fields) or [])
+        self.hidden_fields = set(kwargs.pop('hidden_fields', self.hidden_fields) or [])
 
         self.subforms: Dict[str, 'SiteformsMixin'] = {}
         """Allows sub forms registration."""

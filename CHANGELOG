@@ -10,6 +10,7 @@ Unreleased
 + Bootstrap 4. Auto layout in rows.
 + Form data populated only if request method matches.
 * Exposed 'toolbox.Form'.
+* Fixed 'disabled_fields' and 'hidden_fields' setting declaratively.
 
 
 v0.1.0 [2020-05-13]
