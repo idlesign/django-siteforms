@@ -61,3 +61,71 @@ Options
 * ``opt_submit`` - Submit button text. If not set, submit button won't be added into this form.
 
 * ``opt_submit_name`` - Submit button name.
+
+
+Macroses
+--------
+
+Macroses are a quick way to address various objects.
+
+They can be used as keys in ``Attributes`` (see above).
+
+* ``ALL_FIELDS`` - Denotes every field.
+
+* ``ALL_GROUPS`` - Denotes every group.
+
+* ``ALL_ROWS`` - Denotes every row.
+
+* ``FORM`` - Denotes a form.
+
+* ``SUBMIT`` - Submit button.
+
+
+ALL_FIELDS in Layout
+--------------------
+
+``ALL_FIELDS`` macros can be used in many places in layout.
+It expands into rows for each field which has not been addressed so far.
+
+As layout value
+~~~~~~~~~~~~~~~
+
+This one is the default.
+
+.. code-block:: python
+
+        layout = {
+            FORM: ALL_FIELDS
+        }
+
+
+As group value
+~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+        layout = {
+            FORM: {
+                'basic': [  # group
+                    ['title', 'date_created'],  # row1
+                    'contents',  # row2
+                ],
+                'other': ALL_FIELDS,  # rest rows
+            }
+        }
+
+
+
+As group row
+~~~~~~~~~~~~
+
+.. code-block:: python
+
+        layout = {
+            FORM: {
+                'basic': [  # group
+                    ['title', 'date_created'],  # row1
+                    ALL_FIELDS,  # rest rows
+                ],
+            }
+        }

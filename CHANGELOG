@@ -4,6 +4,7 @@ django-siteforms changelog
 
 Unreleased
 ----------
++ Added support for 'ALL_FIELDS' as group row.
 + Allow groups without titles.
 + Bootstrap 4. Auto layout in rows.
 + Form data populated only if request method matches.

@@ -22,8 +22,8 @@ def layout():
                     ['fchar', 'fbool'],
                     'ftext',
                 ],
-                'other': ALL_FIELDS,
                 '_': ['ffile'],
+                'other': ALL_FIELDS,
             }
         },
     )

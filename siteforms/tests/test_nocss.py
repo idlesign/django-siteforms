@@ -59,3 +59,24 @@ def test_nocss_groups(nocss_form_html, layout):
     assert '<legend>MYBasicGroup</legend>' in html
     assert '</fieldset>\n<fieldset ><legend>somethingmore</legend>' in html
     assert '<legend></legend>' in html  # no-title group
+
+
+def test_nocss_layout_allfields(nocss_form_html):
+
+    layout = {
+        'opt_render_labels': False,
+        'opt_render_help': False,
+        'layout': {
+            FORM: {
+                'some': [
+                    ['fchar', 'fbool'],
+                    ALL_FIELDS,
+                ],
+            },
+        },
+    }
+    html = nocss_form_html(layout)
+    assert (
+        '</legend><div ><span><input type="text" name="fchar" maxlength="50" aria-label="Fchar_name" '
+        'required id="id_fchar"></span>\n<span><input type="checkbox" name="fbool" aria-label="Fbool_name" '
+        'id="id_fbool"></span></div>\n<div >' in html)

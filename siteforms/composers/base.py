@@ -106,6 +106,7 @@ class FormComposer:
 
     def __init__(self, form: Union['SiteformsMixin', Form]):
         self.form = form
+        self.groups = self.groups or {}
 
     def __init_subclass__(cls) -> None:
         # Implements attributes enrichment - inherits attrs values from parents.
@@ -358,6 +359,10 @@ class FormComposer:
             render_group = self._render_group
             grouped = defaultdict(list)
 
+            def add_fields_left():
+                grouped[group_alias].extend([[field] for field in fields.values()])
+                fields.clear()
+
             for group_alias, rows in form_layout.items():
 
                 if isinstance(rows, str):
@@ -365,7 +370,7 @@ class FormComposer:
 
                     if rows == ALL_FIELDS:
                         # All the fields left as separate rows.
-                        grouped[group_alias].extend([[field] for field in fields.values()])
+                        add_fields_left()
 
                     else:  # pragma: nocover
                         raise ValueError(f'Unsupported group layout macros: {rows}')
@@ -374,12 +379,18 @@ class FormComposer:
 
                     for row in rows:
                         if isinstance(row, str):
-                            # One field in row.
-                            grouped[group_alias].append([fields.pop(row)])
+
+                            if row == ALL_FIELDS:
+                                # All the fields left as separate rows.
+                                add_fields_left()
+
+                            else:
+                                # One field in row.
+                                grouped[group_alias].append([fields.pop(row)])
 
                         else:
                             # Several fields in row.
-                            row_fields = [fields.pop(group_field) for group_field in row]
+                            row_fields = [fields.pop(group_field, None) for group_field in row]
                             grouped[group_alias].append(row_fields)
 
             for group_alias, rows in grouped.items():
