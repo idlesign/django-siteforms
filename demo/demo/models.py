@@ -19,6 +19,9 @@ class Article(models.Model):
 
     to_hide = models.CharField('To hide', max_length=10, help_text='Secret field', default='yes', blank=True)
 
+    formsub1 = models.CharField(
+        'Subform', max_length=20, help_text='This part is from subform', default='default|2', blank=True)
+
     dummy = models.CharField('Dummy', max_length=100, help_text='This is just a dummy', default='dummy', blank=True)
 
     email = models.EmailField('Email', help_text='Where to send a message')

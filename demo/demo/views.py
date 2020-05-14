@@ -1,6 +1,6 @@
 from siteforms.composers.base import FormComposer
 from siteforms.composers.bootstrap4 import Bootstrap4, FORM, ALL_FIELDS
-from siteforms.toolbox import ModelForm
+from siteforms.toolbox import ModelForm, Form, fields, SubformWidget
 from .models import Article, Author
 from .utils import render_themed
 
@@ -11,8 +11,25 @@ THEMES = {
 }
 
 
+class SubForm1(Form):
+
+    class Composer(Bootstrap4):
+
+        opt_render_labels = False
+        opt_placeholder_label = True
+
+        layout = {
+            FORM: {'_': ALL_FIELDS}
+        }
+
+    first = fields.CharField(label='some', help_text='some help')
+    second = fields.ChoiceField(label='variants', choices={'1': 'one', '2': 'two'}.items())
+
+
 class ArticleFormMeta:
+
     model = Article
+    widgets = {'formsub1': SubformWidget(SubForm1, 'sub1')}
     fields = '__all__'
 
 
