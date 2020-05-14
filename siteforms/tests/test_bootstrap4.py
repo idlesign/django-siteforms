@@ -1,3 +1,5 @@
+from functools import partial
+
 import pytest
 
 from siteforms.composers.bootstrap4 import Bootstrap4
@@ -9,11 +11,8 @@ class Composer(Bootstrap4):
 
 
 @pytest.fixture
-def bs4_form_html(model_form):
-    def bs_model_form_(options=None, **kwargs):
-        form = model_form(model=Thing, composer=Composer, options=options)(**kwargs)
-        return f'{form}'
-    return bs_model_form_
+def bs4_form_html(form_html):
+    return partial(form_html, composer=Composer, model=Thing)
 
 
 def test_bs4_basic(bs4_form_html, form_fixture_match):

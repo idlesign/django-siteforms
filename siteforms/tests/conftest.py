@@ -1,10 +1,10 @@
-from typing import Type
+from typing import Type, Union
 
 import pytest
 from pytest_djangoapp import configure_djangoapp_plugin
 
 from siteforms.composers.base import FORM, ALL_FIELDS
-from siteforms.toolbox import ModelForm
+from siteforms.toolbox import ModelForm, Form
 
 pytest_plugins = configure_djangoapp_plugin()
 
@@ -30,19 +30,45 @@ def layout():
 
 
 @pytest.fixture
-def model_form():
+def form():
 
-    def model_form_(*, model, composer, options = None, **kwargs) -> Type[ModelForm]:
+    from siteforms.composers.base import FormComposer
 
-        Form = type('DynForm', (ModelForm,), dict(
-            Composer=type('Composer', (composer,), options or {}),
-            Meta=type('Meta', (object,), dict(model=model, fields='__all__')),
+    def form_(
+            *,
+            composer=None,
+            model=None,
+            options: dict = None,
             **kwargs
-        ))
+    ) -> Union[Type[Form], Type[ModelForm]]:
 
-        return Form
+        if composer is None:
+            composer = FormComposer
 
-    return model_form_
+        form_attrs = dict(
+            Composer=type('Composer', (composer,), options or {}),
+            **kwargs
+        )
+
+        form_cls = Form
+
+        if model:
+            form_attrs['Meta'] = type('Meta', (object,), dict(model=model, fields='__all__'))
+            form_cls = ModelForm
+
+        return type('DynForm', (form_cls,), form_attrs)
+
+    return form_
+
+
+@pytest.fixture
+def form_html(form):
+
+    def form_html_(options=None, *, composer=None, model=None, **kwargs):
+        frm = form(model=model, composer=composer, options=options)(**kwargs)
+        return f'{frm}'
+
+    return form_html_
 
 
 @pytest.fixture

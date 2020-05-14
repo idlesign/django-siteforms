@@ -1,4 +1,7 @@
+from functools import partial
+
 import pytest
+from django.forms import fields
 
 from siteforms.composers.base import FormComposer, FORM, ALL_FIELDS
 from siteforms.tests.testapp.models import Thing
@@ -9,11 +12,8 @@ class Composer(FormComposer):
 
 
 @pytest.fixture
-def nocss_form_html(model_form):
-    def bs_model_form_(options=None, **kwargs):
-        form = model_form(model=Thing, composer=Composer, options=options)(**kwargs)
-        return f'{form}'
-    return bs_model_form_
+def nocss_form_html(form_html):
+    return partial(form_html, composer=Composer, model=Thing)
 
 
 def test_nocss_basic(nocss_form_html, form_fixture_match):
@@ -80,3 +80,8 @@ def test_nocss_layout_allfields(nocss_form_html):
         '</legend><div ><span><input type="text" name="fchar" maxlength="50" aria-label="Fchar_name" '
         'required id="id_fchar"></span>\n<span><input type="checkbox" name="fbool" aria-label="Fbool_name" '
         'id="id_fbool"></span></div>\n<div >' in html)
+
+
+def test_nocss_nonmultipart(form):
+    frm = form(composer=Composer, some=fields.CharField())()
+    assert '<form  method="POST">' in f'{frm}'
