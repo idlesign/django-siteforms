@@ -1,6 +1,6 @@
 from typing import Type, Set
 
-from django.forms import ModelForm as _ModelForm, HiddenInput
+from django.forms import ModelForm as _ModelForm, Form as _Form, HiddenInput
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
@@ -59,6 +59,10 @@ class SiteformsMixin:
 
     def __str__(self):
         return self.render()
+
+
+class Form(SiteformsMixin, _Form):
+    """Base form with siteforms features enabled."""
 
 
 class ModelForm(SiteformsMixin, _ModelForm):
