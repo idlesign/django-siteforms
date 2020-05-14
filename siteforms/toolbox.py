@@ -34,8 +34,10 @@ class SiteformsMixin:
         instance = kwargs.get('instance')
         if not instance and (src and request):
             data = getattr(request, src)
-            self.is_submitted = self.Composer.opt_submit_name in data
-            kwargs['data'] = data
+            is_submitted = self.Composer.opt_submit_name in data
+            self.is_submitted = is_submitted
+            if is_submitted and request.method == src:
+                kwargs['data'] = data
 
         self.disabled_fields = set(kwargs.pop('disabled_fields', None) or [])
         self.hidden_fields = set(kwargs.pop('hidden_fields', None) or [])

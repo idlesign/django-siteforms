@@ -2,6 +2,12 @@ django-siteforms changelog
 ==========================
 
 
+Unreleased
+----------
++ Form data populated only if request method matches.
+* Exposed 'toolbox.Form'.
+
+
 v0.1.0 [2020-05-13]
 -------------------
 + Basic functionality.
