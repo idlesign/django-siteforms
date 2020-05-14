@@ -1,9 +1,19 @@
 from django.db import models
 
 
+class Author(models.Model):
+
+    name = models.CharField('Name', max_length=100)
+
+    def __str__(self):
+        return f'{self.name} ({self.id})'
+
+
 class Article(models.Model):
 
     date_created = models.DateTimeField('Created', auto_created=True, blank=True)
+
+    author = models.ForeignKey(Author, verbose_name='Author', on_delete=models.CASCADE)
 
     title = models.CharField('Title', max_length=200, help_text='Short descriptive text')
 

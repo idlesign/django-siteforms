@@ -1,7 +1,7 @@
 from siteforms.composers.base import FormComposer
 from siteforms.composers.bootstrap4 import Bootstrap4, FORM, ALL_FIELDS
 from siteforms.toolbox import ModelForm
-from .models import Article
+from .models import Article, Author
 from .utils import render_themed
 
 
@@ -11,8 +11,13 @@ THEMES = {
 }
 
 
-class Form1Meta:
+class ArticleFormMeta:
     model = Article
+    fields = '__all__'
+
+
+class AuthorFormMeta:
+    model = Author
     fields = '__all__'
 
 
@@ -21,7 +26,7 @@ opts = {
         {
             FORM: {
                 'basic': [
-                    ['title', 'date_created'],
+                    ['title', 'date_created', 'author'],
                     'contents',
                 ],
                 'other': ALL_FIELDS,
@@ -67,6 +72,7 @@ def index(request):
 
         attrs={
             'contents': {'rows': 2},
+            FORM: {'novalidate': ''},
         },
         groups={
             'basic': 'Basic attributes',
@@ -78,7 +84,7 @@ def index(request):
 
     Form = type('ArticleForm', (ModelForm,), dict(
         Composer=type('Composer', composer, composer_options),
-        Meta=Form1Meta,
+        Meta=ArticleFormMeta,
         disabled_fields={'dummy'},
         hidden_fields={'to_hide'},
     ))
