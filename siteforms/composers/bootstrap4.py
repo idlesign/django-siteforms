@@ -111,11 +111,6 @@ class Bootstrap4(FormComposer):
             css += ' position-static'
         return css
 
-    def _get_attr_rows(self, fields: List[str]) -> Optional[str]:
-        if len(fields) > 1:
-            return 'form-row mx-0'
-        return None
-
     def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str, feedback: str) -> str:
 
         opt_columns = self.opt_columns
@@ -204,7 +199,7 @@ class Bootstrap4(FormComposer):
         FORM: {'class': _get_attr_form},
         SUBMIT: {'class': 'btn btn-primary mt-3'},  # todo control-group?
         ALL_FIELDS: {'class': 'form-control'},
-        ALL_ROWS: {'class': _get_attr_rows},
+        ALL_ROWS: {'class': 'form-row mx-0'},
         ALL_GROUPS: {'class': 'form-group'},
         FileInput: _file_cls,
         ClearableFileInput: _file_cls,
@@ -224,5 +219,5 @@ class Bootstrap4(FormComposer):
     }
 
     wrappers: TypeAttrs = {
-        ALL_FIELDS: '<div class="form-group mx-1">{field}</div>',
+        ALL_FIELDS: '<div class="form-group col">{field}</div>',
     }
