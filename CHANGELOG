@@ -2,8 +2,8 @@ django-siteforms changelog
 ==========================
 
 
-Unreleased
-----------
+v0.2.0 [2020-05-18]
+-------------------
 + Added automatic files handling.
 + Added basic support for subforms.
 + Added support for 'ALL_FIELDS' as group row.
