@@ -4,6 +4,7 @@ django-siteforms changelog
 
 Unreleased
 ----------
++ Added automatic files handling.
 + Added basic support for subforms.
 + Added support for 'ALL_FIELDS' as group row.
 + Allow groups without titles.

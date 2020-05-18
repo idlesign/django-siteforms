@@ -25,8 +25,13 @@ class SiteformsMixin(BaseForm):
 
     Composer: Type['FormComposer'] = None
 
-    def __init__(self, *args, request: HttpRequest = None, src: str = None, **kwargs):
-
+    def __init__(
+            self,
+            *args,
+            request: HttpRequest = None,
+            src: str = None,
+            **kwargs
+    ):
         self.src = src
         """Form data source. E.g.: POST, GET."""
 
@@ -45,18 +50,19 @@ class SiteformsMixin(BaseForm):
 
         super().__init__(*args, **kwargs)
 
+        # Attach files automatically.
+        if self.is_submitted and self.is_multipart():
+            kwargs['files'] = request.FILES
+
     def _initialize(self, kwargs):
         # NB: mutates kwargs
 
         src = self.src
         request = self.request
 
-        # Try to load data from custom course if no model instance provided.
-        instance = kwargs.get('instance')
-
         is_submitted = False
 
-        if not instance and (src and request):
+        if src and request:
             data = getattr(request, src)
             is_submitted = self.Composer.opt_submit_name in data
 
@@ -76,6 +82,8 @@ class SiteformsMixin(BaseForm):
         return self.cleaned_data
 
     def _initialize_subforms(self, is_submitted, kwargs):
+        kwargs = kwargs.copy()
+        kwargs.pop('instance', None)
 
         siteforms = {}
 
