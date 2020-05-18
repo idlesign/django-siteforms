@@ -129,3 +129,59 @@ As group row
                 ],
             }
         }
+
+
+Subforms
+--------
+
+Sometimes you may want to represent an entire other form as a field of you main form.
+
+This can be considered as an alternative to complex widgets.
+
+.. code-block:: python
+
+    from siteforms.composers.bootstrap4 import Bootstrap4
+    from siteforms.toolbox import ModelForm, Form
+
+    class SubForm(Form):
+        """This form we'll include in our main form."""
+
+        class Composer(Bootstrap4):
+
+            opt_render_labels = False
+            opt_placeholder_label = True
+
+        field1 = fields.CharField(label='field1')
+        field2 = fields.ChoiceField(label='field1')
+
+        def get_subform_value(self):
+            """You may override this method to apply value casting.
+            Be default it returns subform's cleaned data dictionary
+            (convenient for JSONField in main form).
+
+            The result of this method would became the value of main form field.
+
+            """
+            value = super().get_subform_value()
+            return f"{value['field1']} ----> {value['field2']}"
+
+    class MyForm(ModelForm):
+        """That would be our main form.
+
+        Let's suppose it has `myfield` field, which value
+        we want to represent in a subform.
+
+        """
+        subforms = {'myfield': SubForm}  # Map field name to subform class.
+
+        class Composer(Bootstrap4):
+
+            opt_columns =  True
+
+        class Meta:
+            model = MyModel
+            fields = '__all__'
+
+
+After MyForm instance is validated (``.is_valid()``), subform fields values
+are gathered (see ``.get_subform_value()``) and placed into main form ``cleaned_data``.

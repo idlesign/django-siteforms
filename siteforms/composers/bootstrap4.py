@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, List, Union
+from typing import Optional, Tuple, Union
 
 from django.forms import FileInput, ClearableFileInput, CheckboxInput, BoundField, Select, SelectMultiple
 
@@ -100,7 +100,7 @@ class Bootstrap4(FormComposer):
             })
 
     def _get_attr_form(self) -> Optional[str]:
-        # todo maybe needs-validation and novalidate
+        # todo maybe needs-validation
         if self.opt_form_inline:
             return 'form-inline'
         return None

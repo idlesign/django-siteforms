@@ -1,21 +1,23 @@
-import inspect
-
 from django.forms import Widget
 
 if False:  # pragma: nocover
-    from siteforms.composers.base import FormComposer  # noqa
+    from siteforms.toolbox import FormComposer, SiteformsMixin  # noqa
 
 
 class SubformWidget(Widget):
     """Widget representing a subform"""
 
-    template_name = ''
+    template_name = ''  # Obey the requirement.
 
-    def __init__(self, form, alias, *, attrs=None):
+    def __init__(self, subform: 'SiteformsMixin', *, attrs=None):
         super().__init__(attrs)
-        self.alias = alias
-        self.form = form
+        self.subform = subform
 
     def render(self, name, value, attrs=None, renderer=None):
-        composer: 'FormComposer' = inspect.currentframe().f_back.f_back.f_locals['self']
-        return composer.form.subforms[self.alias].render()
+        return self.subform.render()
+
+    def value_from_datadict(self, data, files, name):
+        subform = self.subform
+        if subform.is_valid():
+            return subform.get_subform_value()
+        return None

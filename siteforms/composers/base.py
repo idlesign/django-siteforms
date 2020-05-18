@@ -409,6 +409,7 @@ class FormComposer:
         """Renders form to string."""
 
         # todo global errors where to place?
+        # todo error for subform field is not rendered. maybe translate to nonfield.
         # errors_global = self.form.non_field_errors()
 
         html = self._render_layout()

@@ -20,6 +20,9 @@ class SiteformsMixin(BaseForm):
     hidden_fields: Set[str] = None
     """Fields to be hidden."""
 
+    subforms: Dict[str, Type['SiteformsMixin']] = None
+    """Allows sub forms registration. Expects field name to subform class mapping."""
+
     Composer: Type['FormComposer'] = None
 
     def __init__(self, *args, request: HttpRequest = None, src: str = None, **kwargs):
@@ -35,9 +38,8 @@ class SiteformsMixin(BaseForm):
 
         self.disabled_fields = set(kwargs.pop('disabled_fields', self.disabled_fields) or [])
         self.hidden_fields = set(kwargs.pop('hidden_fields', self.hidden_fields) or [])
-
-        self.subforms: Dict[str, 'SiteformsMixin'] = {}
-        """Allows sub forms registration."""
+        self.subforms = kwargs.pop('subforms', self.subforms) or {}
+        self._subforms: Dict[str, 'SiteformsMixin'] = {}
 
         self._initialize(kwargs)
 
@@ -65,17 +67,21 @@ class SiteformsMixin(BaseForm):
 
         self._initialize_subforms(is_submitted, kwargs)
 
+    def get_subform_value(self):
+        """Returns data for subform widget. Default: dict.
+
+        Override to customize returned value.
+
+        """
+        return self.cleaned_data
+
     def _initialize_subforms(self, is_submitted, kwargs):
 
-        subforms = {}
+        siteforms = {}
 
-        for field in self.base_fields.values():
-            widget = field.widget
-            if isinstance(widget, SubformWidget):
-                subforms[widget.alias] = widget.form
+        for field_name, subform in self.subforms.items():
 
-        # Instantiate subform classes with the same arguments.
-        for alias, subform in subforms.items():
+            field = self.base_fields[field_name]
 
             # Attach Composer automatically if none in subform.
             composer = getattr(subform, 'Composer', None)
@@ -85,12 +91,22 @@ class SiteformsMixin(BaseForm):
 
             subform.Composer.opt_render_form = False
 
-            sub = subform(**{**kwargs, 'prefix': alias})
+            # Instantiate subform classes with the same arguments.
+            sub = subform(**{**kwargs, 'prefix': field_name})
             sub.is_submitted = is_submitted
+            siteforms[field_name] = sub
 
-            subforms[alias] = sub
+            field.widget = SubformWidget(subform=sub)
 
-        self.subforms = subforms
+        self._subforms = siteforms
+
+    def is_valid(self):
+        valid = super().is_valid()
+
+        for subform in self._subforms.values():
+            valid &= subform.is_valid()
+
+        return valid
 
     def render(self):
         fields = self.fields
