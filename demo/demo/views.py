@@ -1,6 +1,6 @@
 from siteforms.composers.base import FormComposer
 from siteforms.composers.bootstrap4 import Bootstrap4, FORM, ALL_FIELDS
-from siteforms.toolbox import ModelForm, Form, fields, SubformWidget
+from siteforms.toolbox import ModelForm, Form, fields
 from .models import Article, Author
 from .utils import render_themed
 
@@ -12,6 +12,8 @@ THEMES = {
 
 
 class SubForm1(Form):
+
+    subform_serialize = True
 
     class Composer(Bootstrap4):
 
@@ -29,7 +31,6 @@ class SubForm1(Form):
 class ArticleFormMeta:
 
     model = Article
-    widgets = {'formsub1': SubformWidget(SubForm1, 'sub1')}
     fields = '__all__'
 
 
@@ -83,6 +84,8 @@ def handle_opts(request, composer_options):
 
 def index(request):
 
+    article = Article.objects.get(pk=1)
+
     title, composer = THEMES.get(request.theme.strip('_'))
 
     composer_options = dict(
@@ -103,11 +106,16 @@ def index(request):
     Form = type('ArticleForm', (ModelForm,), dict(
         Composer=type('Composer', composer, composer_options),
         Meta=ArticleFormMeta,
+        subforms={'formsub1': SubForm1},
         disabled_fields={'dummy'},
         hidden_fields={'to_hide'},
     ))
 
-    form1 = Form(request=request, src='POST')
+    form1 = Form(
+        request=request,
+        src='POST',
+        instance=article,
+    )
 
     if form1.is_valid():
         pass
