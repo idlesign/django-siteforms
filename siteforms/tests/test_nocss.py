@@ -88,40 +88,64 @@ def test_nocss_nonmultipart(form):
     assert '<form  method="POST">' in f'{frm}'
 
 
-def test_nocss_subforms(form, request_factory):
+@pytest.fixture
+def form_cls(form):
 
-    class SubForm1(Form):
+    def form_cls_(model=None):
 
-        first = fields.CharField(label='some', help_text='some help')
-        second = fields.ChoiceField(label='variants', choices={'1': 'one', '2': 'two'}.items())
+        class SubForm1(Form):
 
-        def get_subform_value(self):
-            value = super().get_subform_value()
-            return f"{value['first']}|{value['second']}"
+            subform_serialize = True
 
-    form_cls = form(
-        composer=Composer,
-        somefield=fields.CharField(),
-        formsub1=fields.CharField(),
-        subforms={'formsub1': SubForm1},
-    )
+            first = fields.CharField(label='some', help_text='some help')
+            second = fields.ChoiceField(label='variants', choices={'1': 'one', '2': 'two'}.items())
 
-    frm = form_cls()
+        form_kwargs = dict(
+            composer=Composer,
+            somefield=fields.CharField(),
+            fchar=fields.CharField(),
+            subforms={'fchar': SubForm1},
+            model=model,
+        )
+        form_cls = form(**form_kwargs)
+
+        return form_cls
+
+    return form_cls_
+
+
+def test_nocss_subforms(form_cls, request_factory):
+
+    frm = form_cls()()
     frm_html = f'{frm}'
-    assert 'formsub1-first' in frm_html
+    assert 'fchar-first' in frm_html
 
-    def check_source(params):
+    def check_source(params, *, instance=None):
         request = request_factory().get(params)
-        frm = form_cls(src='GET', request=request)
+        init_kwargs = dict(src='GET', request=request)
+        if instance:
+            init_kwargs['instance'] = instance
+        frm = form_cls(model=instance.__class__ if instance else None)(**init_kwargs)
         valid = frm.is_valid()
         return valid, frm
 
-    valid, frm = check_source('some?__submit=1&somefield=bc&formsub1-second=2')
+    # Missing field.
+    valid, frm = check_source('some?__submit=1&somefield=bc&fchar-second=2')
     assert not valid
-    assert 'field is required.</div></span><small  id="id_formsub1-first_help' in f'{frm}'
+    assert 'field is required.</div></span><small  id="id_fchar-first_help' in f'{frm}'
 
-    valid, frm = check_source('some?__submit=1&somefield=bc&formsub1-second=2&formsub1-first=op')
+    # All is well.
+    valid, frm = check_source('some?__submit=1&somefield=bc&fchar-second=2&fchar-first=op')
     assert valid
     assert 'field is required' not in f'{frm}'
 
-    assert frm.cleaned_data == {'somefield': 'bc', 'formsub1': 'op|2'}
+    assert frm.cleaned_data == {'fchar': '{"first": "op", "second": "2"}', 'somefield': 'bc'}
+
+    # With instance.
+    thing = Thing(fchar='{"first": "dum", "second": "2"}',)
+    thing.save()
+
+    valid, frm = check_source('some', instance=thing)
+    frm_html = f'{frm}'
+    assert 'value="dum"' in frm_html
+    assert 'value="2" selected' in frm_html

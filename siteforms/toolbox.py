@@ -1,4 +1,5 @@
-from typing import Type, Set, Dict
+import json
+from typing import Type, Set, Dict, Union
 
 from django.forms import ModelForm as _ModelForm, Form as _Form, HiddenInput, BaseForm
 from django.forms import fields  # noqa
@@ -9,6 +10,9 @@ from .widgets import SubformWidget  # noqa
 
 if False:  # pragma: nocover
     from .composers.base import FormComposer  # noqa
+
+
+UNSET = set()
 
 
 class SiteformsMixin(BaseForm):
@@ -22,6 +26,9 @@ class SiteformsMixin(BaseForm):
 
     subforms: Dict[str, Type['SiteformsMixin']] = None
     """Allows sub forms registration. Expects field name to subform class mapping."""
+
+    subform_serialize: bool = False
+    """Whether to serialize/deserialize value for this subform."""
 
     Composer: Type['FormComposer'] = None
 
@@ -46,15 +53,13 @@ class SiteformsMixin(BaseForm):
         self.subforms = kwargs.pop('subforms', self.subforms) or {}
         self._subforms: Dict[str, 'SiteformsMixin'] = {}
 
-        self._initialize(kwargs)
+        self._initialize_pre(kwargs)
 
         super().__init__(*args, **kwargs)
 
-        # Attach files automatically.
-        if self.is_submitted and self.is_multipart():
-            kwargs['files'] = request.FILES
+        self._initialize_post()
 
-    def _initialize(self, kwargs):
+    def _initialize_pre(self, kwargs):
         # NB: mutates kwargs
 
         src = self.src
@@ -73,13 +78,35 @@ class SiteformsMixin(BaseForm):
 
         self._initialize_subforms(is_submitted, kwargs)
 
-    def get_subform_value(self):
+    def _initialize_post(self):
+        # Attach files automatically.
+
+        if self.is_submitted and self.is_multipart():
+            self.files = self.request.FILES
+
+        for field_name, subform in self._subforms.items():
+            initial_value = self.initial.get(field_name, UNSET)
+            if initial_value is not UNSET:
+                subform.set_subform_value(initial_value)
+
+    def set_subform_value(self, value: Union[dict, str]):
+        """Sets value for subform."""
+        if self.subform_serialize:
+            value = json.loads(value)
+        self.initial = value
+
+    def get_subform_value(self) -> Union[dict, str]:
         """Returns data for subform widget. Default: dict.
 
         Override to customize returned value.
 
         """
-        return self.cleaned_data
+        value = self.cleaned_data
+
+        if self.subform_serialize:
+            value = json.dumps(value)
+
+        return value
 
     def _initialize_subforms(self, is_submitted, kwargs):
         kwargs = kwargs.copy()
