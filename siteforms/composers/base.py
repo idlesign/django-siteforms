@@ -64,7 +64,7 @@ class FormComposer:
     opt_tag_help: str = 'small'
     """Tag to be used for hints."""
 
-    opt_tag_feedback: str = 'span'
+    opt_tag_feedback: str = 'div'
     """Tag to be used for feedback."""
 
     opt_tag_feedback_line: str = 'div'
@@ -249,11 +249,22 @@ class FormComposer:
 
     def _render_feedback(self, field: BoundField) -> str:
 
-        if not self.form.is_submitted:
+        form = self.form
+
+        if not form.is_submitted:
             return ''
 
         errors = field.errors
         if not errors:
+            return ''
+
+        if field.is_hidden:
+            # Gather hidden field errors into non-field group.
+            for error in errors:
+                form.add_error(
+                    None,
+                    _('(Hidden field %(name)s) %(error)s') %
+                    {'name': field.name, 'error': str(error)})
             return ''
 
         attrs = self._attrs_get_basic(self.attrs_feedback, field)
@@ -305,6 +316,7 @@ class FormComposer:
     def _render_field_box(self, field: BoundField) -> str:
 
         if field.is_hidden:
+            self._render_feedback(field)
             return str(field)
 
         label = ''

@@ -18,15 +18,21 @@ def nocss_form_html(form_html):
 
 
 def test_nonfield_errors(form, request_factory):
-    request = request_factory().get('some?__submit=siteform')
-    frm = form(composer=Composer)(src='GET', request=request)
+    request = request_factory().get('some?__submit=siteform&some=hmm')
+
+    frm = form(
+        composer=Composer,
+        some=fields.DateField(widget=fields.HiddenInput())
+    )(src='GET', request=request)
+
     frm.is_valid()
 
     frm.add_error(None, 'Errr1')
     frm.add_error(None, 'Errr2')
 
     form_html = f'{frm}'
-    assert '<span ><div>Errr1</div>\n<div>Errr2</div></span>' in form_html
+    assert '<div ><div>Errr1</div>\n<div>Errr2</div>' in form_html
+    assert '(Hidden field some) Enter a valid date.' in form_html
 
 
 def test_nocss_basic(nocss_form_html, form_fixture_match):
@@ -142,7 +148,7 @@ def test_nocss_subforms(form_cls, request_factory):
     # Missing field.
     valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2')
     assert not valid
-    assert 'field is required.</div></span><small  id="id_fchar-first_help' in f'{frm}'
+    assert 'field is required.</div></div><small  id="id_fchar-first_help' in f'{frm}'
 
     # All is well.
     valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=op')

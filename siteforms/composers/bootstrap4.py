@@ -39,9 +39,6 @@ class Bootstrap4(FormComposer):
     opt_feedback_tooltips: bool = False
     """Whether to render feedback in tooltips."""
 
-    opt_tag_feedback: str = 'div'
-    """Tag to be used for feedback."""
-
     _size_mod: Tuple[str, ...] = ('col-form-label', 'form-control', 'input-group')
     _file_cls = {'class': 'form-control-file'}
 
