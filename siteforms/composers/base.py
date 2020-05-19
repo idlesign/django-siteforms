@@ -263,7 +263,7 @@ class FormComposer:
             for error in errors:
                 form.add_error(
                     None,
-                    _('(Hidden field %(name)s) %(error)s') %
+                    _('Hidden field "%(name)s": %(error)s') %
                     {'name': field.name, 'error': str(error)})
             return ''
 
@@ -273,8 +273,6 @@ class FormComposer:
         return f'<{tag} {flatatt(attrs)}>{self._format_feedback_lines(errors)}</{tag}>'
 
     def _render_feedback_nonfield(self) -> str:
-        # todo error for subform field is not rendered. maybe translate to nonfield.
-
         errors = self.form.non_field_errors()
         if not errors:
             return ''

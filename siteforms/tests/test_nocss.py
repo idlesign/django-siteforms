@@ -32,7 +32,7 @@ def test_nonfield_errors(form, request_factory):
 
     form_html = f'{frm}'
     assert '<div ><div>Errr1</div>\n<div>Errr2</div>' in form_html
-    assert '(Hidden field some) Enter a valid date.' in form_html
+    assert 'Hidden field "some": Enter a valid date.' in form_html
 
 
 def test_nocss_basic(nocss_form_html, form_fixture_match):
@@ -119,7 +119,7 @@ def form_cls(form):
         form_kwargs = dict(
             composer=Composer,
             somefield=fields.CharField(),
-            fchar=fields.CharField(),
+            fchar=fields.CharField(max_length=30),
             subforms={'fchar': SubForm1},
             model=model,
         )
@@ -149,6 +149,11 @@ def test_nocss_subforms(form_cls, request_factory):
     valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2')
     assert not valid
     assert 'field is required.</div></div><small  id="id_fchar-first_help' in f'{frm}'
+
+    # Value is too long for subform field.
+    valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=valueistoolong')
+    assert not valid
+    assert 'Subform field "fchar": Ensure this value has at most 30' in f'{frm}'
 
     # All is well.
     valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=op')

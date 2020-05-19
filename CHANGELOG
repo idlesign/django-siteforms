@@ -7,6 +7,7 @@ Unreleased
 + Added support for multiple forms handled by the same view.
 + Added support for non-field errors.
 + Now showing hidden fields errors in non-field area.
++ Subform fields errors is now rendered in non-field area.
 
 
 v0.2.0 [2020-05-18]

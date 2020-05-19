@@ -5,6 +5,7 @@ from django.forms import ModelForm as _ModelForm, Form as _Form, HiddenInput, Ba
 from django.forms import fields  # noqa
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 
 from .widgets import SubformWidget
 
@@ -137,8 +138,18 @@ class SiteformsMixin(BaseForm):
     def is_valid(self):
         valid = super().is_valid()
 
-        for subform in self._subforms.values():
-            valid &= subform.is_valid()
+        errors = self.errors
+
+        for fieldname, subform in self._subforms.items():
+            subform_valid = subform.is_valid()
+            valid &= subform_valid
+
+            if subform_valid:
+                for error in errors.get(fieldname, []):
+                    self.add_error(
+                        None,
+                        _('Subform field "%(name)s": %(error)s') %
+                        {'name': fieldname, 'error': str(error)})
 
         return valid
 
