@@ -13,8 +13,6 @@ THEMES = {
 
 class SubForm1(Form):
 
-    subform_serialize = True
-
     class Composer(Bootstrap4):
 
         opt_render_labels = False

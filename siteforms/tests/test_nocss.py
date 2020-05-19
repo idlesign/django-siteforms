@@ -95,8 +95,6 @@ def form_cls(form):
 
         class SubForm1(Form):
 
-            subform_serialize = True
-
             first = fields.CharField(label='some', help_text='some help')
             second = fields.ChoiceField(label='variants', choices={'1': 'one', '2': 'two'}.items())
 

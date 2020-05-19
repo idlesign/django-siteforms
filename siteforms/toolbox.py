@@ -27,9 +27,6 @@ class SiteformsMixin(BaseForm):
     subforms: Dict[str, Type['SiteformsMixin']] = None
     """Allows sub forms registration. Expects field name to subform class mapping."""
 
-    subform_serialize: bool = False
-    """Whether to serialize/deserialize value for this subform."""
-
     Composer: Type['FormComposer'] = None
 
     def __init__(
@@ -91,19 +88,15 @@ class SiteformsMixin(BaseForm):
 
     def set_subform_value(self, value: Union[dict, str]):
         """Sets value for subform."""
-        if self.subform_serialize:
+        if isinstance(value, str):
             value = json.loads(value)
         self.initial = value
 
-    def get_subform_value(self) -> Union[dict, str]:
-        """Returns data for subform widget. Default: dict.
-
-        Override to customize returned value.
-
-        """
+    def get_subform_value(self) -> dict:
+        """Returns data dict for subform widget."""
         value = self.cleaned_data
 
-        if self.subform_serialize:
+        if isinstance(value, dict):
             value = json.dumps(value)
 
         return value
