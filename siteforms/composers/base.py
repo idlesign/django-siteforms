@@ -67,6 +67,9 @@ class FormComposer:
     opt_tag_feedback: str = 'span'
     """Tag to be used for feedback."""
 
+    opt_tag_feedback_line: str = 'div'
+    """Tag to be used for feedback."""
+
     opt_submit: str = _('Submit')
     """Submit button text."""
 
@@ -82,7 +85,11 @@ class FormComposer:
     """Attributes to apply to hints."""
 
     attrs_feedback: TypeAttrs = None
-    """Attributes to apply to feedback (validation notes)."""
+    """Attributes to apply to feedback (validation notes).
+    
+    FORM macros here denotes global (non-field) form feedback attrs.
+    
+    """
 
     groups: Dict[str, str] = None
     """Map alias to group titles."""
@@ -107,6 +114,7 @@ class FormComposer:
     def __init__(self, form: Union['SiteformsMixin', Form]):
         self.form = form
         self.groups = self.groups or {}
+        self.attrs_feedback = self.attrs_feedback or {}
 
     def __init_subclass__(cls) -> None:
         # Implements attributes enrichment - inherits attrs values from parents.
@@ -236,7 +244,8 @@ class FormComposer:
         return f'{label}'
 
     def _format_feedback_lines(self, errors: List) -> str:
-        return '\n'.join([f'<div>{error}</div>' for error in errors])
+        tag = self.opt_tag_feedback_line
+        return '\n'.join([f'<{tag}>{error}</{tag}>' for error in errors])
 
     def _render_feedback(self, field: BoundField) -> str:
 
@@ -250,6 +259,17 @@ class FormComposer:
         attrs = self._attrs_get_basic(self.attrs_feedback, field)
         tag = self.opt_tag_feedback
 
+        return f'<{tag} {flatatt(attrs)}>{self._format_feedback_lines(errors)}</{tag}>'
+
+    def _render_feedback_nonfield(self) -> str:
+        # todo error for subform field is not rendered. maybe translate to nonfield.
+
+        errors = self.form.non_field_errors()
+        if not errors:
+            return ''
+
+        attrs = self.attrs_feedback.get(FORM, {})
+        tag = self.opt_tag_feedback
         return f'<{tag} {flatatt(attrs)}>{self._format_feedback_lines(errors)}</{tag}>'
 
     def _render_help(self, field: BoundField) -> str:
@@ -342,7 +362,9 @@ class FormComposer:
 
         form_layout = self.layout[FORM]
 
-        out = []
+        out = [
+            self._render_feedback_nonfield(),
+        ]
 
         if isinstance(form_layout, str):
             # Simple layout defined by macros.
@@ -408,10 +430,6 @@ class FormComposer:
 
     def render(self) -> str:
         """Renders form to string."""
-
-        # todo global errors where to place?
-        # todo error for subform field is not rendered. maybe translate to nonfield.
-        # errors_global = self.form.non_field_errors()
 
         html = self._render_layout()
 

@@ -17,6 +17,18 @@ def nocss_form_html(form_html):
     return partial(form_html, composer=Composer, model=Thing)
 
 
+def test_nonfield_errors(form, request_factory):
+    request = request_factory().get('some?__submit=siteform')
+    frm = form(composer=Composer)(src='GET', request=request)
+    frm.is_valid()
+
+    frm.add_error(None, 'Errr1')
+    frm.add_error(None, 'Errr2')
+
+    form_html = f'{frm}'
+    assert '<span ><div>Errr1</div>\n<div>Errr2</div></span>' in form_html
+
+
 def test_nocss_basic(nocss_form_html, form_fixture_match):
 
     thing = Thing()

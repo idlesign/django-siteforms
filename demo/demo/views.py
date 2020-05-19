@@ -116,7 +116,8 @@ def index(request):
     )
 
     if form1.is_valid():
-        pass
+        form1.add_error(None, 'This is a non-field error 1.')
+        form1.add_error(None, 'And this one is a non-field error 2.')
 
     context = {
         'title': title,

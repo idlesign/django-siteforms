@@ -211,6 +211,7 @@ class Bootstrap4(FormComposer):
     }
 
     attrs_feedback: TypeAttrs = {
+        FORM: {'class': 'alert alert-danger mb-4', 'role': 'alert'},
         ALL_FIELDS: {'class': _get_attr_feedback},
     }
 
