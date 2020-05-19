@@ -6,7 +6,7 @@ from django.forms import fields  # noqa
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
-from .widgets import SubformWidget  # noqa
+from .widgets import SubformWidget
 
 if False:  # pragma: nocover
     from .composers.base import FormComposer  # noqa
@@ -76,7 +76,7 @@ class SiteformsMixin(BaseForm):
             if is_submitted and request.method == src:
                 kwargs['data'] = data
 
-        self._initialize_subforms(is_submitted, kwargs)
+        self._initialize_subforms(kwargs)
 
     def _initialize_post(self):
         # Attach files automatically.
@@ -108,11 +108,16 @@ class SiteformsMixin(BaseForm):
 
         return value
 
-    def _initialize_subforms(self, is_submitted, kwargs):
+    def _initialize_subforms(self, kwargs):
         kwargs = kwargs.copy()
         kwargs.pop('instance', None)
 
-        siteforms = {}
+        kwargs.update({
+            'src': self.src,
+            'request': self.request,
+        })
+
+        subforms = {}
 
         for field_name, subform in self.subforms.items():
 
@@ -128,12 +133,11 @@ class SiteformsMixin(BaseForm):
 
             # Instantiate subform classes with the same arguments.
             sub = subform(**{**kwargs, 'prefix': field_name})
-            sub.is_submitted = is_submitted
-            siteforms[field_name] = sub
+            subforms[field_name] = sub
 
             field.widget = SubformWidget(subform=sub)
 
-        self._subforms = siteforms
+        self._subforms = subforms
 
     def is_valid(self):
         valid = super().is_valid()
