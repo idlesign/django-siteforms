@@ -28,7 +28,7 @@ def test_nocss_basic(nocss_form_html, form_fixture_match):
 
 
 def test_nocss_validation(nocss_form_html, request_factory):
-    request = request_factory().get('some?__submit=1')
+    request = request_factory().get('some?__submit=siteform')
     html = nocss_form_html(src='GET', request=request)
     assert 'csrfmiddlewaretoken' in html
     assert '<div>This field is required.</div>' in html
@@ -128,12 +128,12 @@ def test_nocss_subforms(form_cls, request_factory):
         return valid, frm
 
     # Missing field.
-    valid, frm = check_source('some?__submit=1&somefield=bc&fchar-second=2')
+    valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2')
     assert not valid
     assert 'field is required.</div></span><small  id="id_fchar-first_help' in f'{frm}'
 
     # All is well.
-    valid, frm = check_source('some?__submit=1&somefield=bc&fchar-second=2&fchar-first=op')
+    valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=op')
     assert valid
     assert 'field is required' not in f'{frm}'
 

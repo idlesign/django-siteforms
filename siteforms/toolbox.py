@@ -50,6 +50,9 @@ class SiteformsMixin(BaseForm):
         self.subforms = kwargs.pop('subforms', self.subforms) or {}
         self._subforms: Dict[str, 'SiteformsMixin'] = {}
 
+        # Allow subform using the same submit value as the base form.
+        self._submit_value = kwargs.pop('submit_value', kwargs.get('prefix', self.prefix) or 'siteform')
+
         self._initialize_pre(kwargs)
 
         super().__init__(*args, **kwargs)
@@ -62,11 +65,9 @@ class SiteformsMixin(BaseForm):
         src = self.src
         request = self.request
 
-        is_submitted = False
-
         if src and request:
             data = getattr(request, src)
-            is_submitted = self.Composer.opt_submit_name in data
+            is_submitted = data.get(self.Composer.opt_submit_name, '') == self._submit_value
 
             self.is_submitted = is_submitted
 
@@ -108,6 +109,7 @@ class SiteformsMixin(BaseForm):
         kwargs.update({
             'src': self.src,
             'request': self.request,
+            'submit_value': self._submit_value,
         })
 
         subforms = {}

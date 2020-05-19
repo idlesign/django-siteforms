@@ -185,3 +185,18 @@ This can be considered as an alternative to complex widgets.
 
 After MyForm instance is validated (``.is_valid()``), subform fields values
 are gathered (see ``.get_subform_value()``) and placed into main form ``cleaned_data``.
+
+
+Multiple forms
+--------------
+You may put more than one form from the same view.
+
+For that to wok properly please use ``prefix`` for your forms.
+
+.. code-block:: python
+
+    form1 = MyForm1()
+    form2 = MyForm2(prefix='form2')
+    form3 = MyForm3(prefix='form3')
+
+Prefix attribute may also be declared in form class.

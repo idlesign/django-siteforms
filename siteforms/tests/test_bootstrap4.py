@@ -72,7 +72,7 @@ def test_bs4_render_labels(bs4_form_html):
 
 
 def test_bs4_validation(bs4_form_html, request_factory):
-    request = request_factory().get('some?__submit=1')
+    request = request_factory().get('some?__submit=siteform')
     html = bs4_form_html(src='GET', request=request)
     assert 'is-valid' in html
     assert 'is-invalid' in html

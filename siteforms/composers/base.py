@@ -402,7 +402,8 @@ class FormComposer:
         get_attr = self._attrs_get
         return self._format_value(
             get_attr(self.wrappers, SUBMIT),
-            submit=f'<button type="submit" name="{self.opt_submit_name}" {flatatt(get_attr(self.attrs, SUBMIT))}>{self.opt_submit}</button>'
+            submit=f'<button type="submit" name="{self.opt_submit_name}" value="{self.form._submit_value}"'
+                   f'{flatatt(get_attr(self.attrs, SUBMIT))}>{self.opt_submit}</button>'
         )
 
     def render(self) -> str:
