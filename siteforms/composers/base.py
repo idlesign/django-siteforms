@@ -392,10 +392,12 @@ class FormComposer:
             grouped = defaultdict(list)
 
             def add_fields_left():
-                grouped[group_alias].extend([[field] for field in fields.values()])
+                group.extend([[field] for field in fields.values()])
                 fields.clear()
 
             for group_alias, rows in form_layout.items():
+
+                group = grouped[group_alias]
 
                 if isinstance(rows, str):
                     # Macros.
@@ -418,12 +420,11 @@ class FormComposer:
 
                             else:
                                 # One field in row.
-                                grouped[group_alias].append([fields.pop(row)])
+                                group.append([fields.pop(row)])
 
                         else:
                             # Several fields in row.
-                            row_fields = [fields.pop(group_field, None) for group_field in row]
-                            grouped[group_alias].append(row_fields)
+                            group.append([fields.pop(group_field, '') for group_field in row])
 
             for group_alias, rows in grouped.items():
                 out.append(render_group(group_alias, rows=rows))
@@ -434,8 +435,10 @@ class FormComposer:
         get_attr = self._attrs_get
         return self._format_value(
             get_attr(self.wrappers, SUBMIT),
-            submit=f'<button type="submit" name="{self.opt_submit_name}" value="{self.form._submit_value}"'
-                   f'{flatatt(get_attr(self.attrs, SUBMIT))}>{self.opt_submit}</button>'
+            submit=(
+                f'<button type="submit" name="{self.opt_submit_name}" value="{self.form._submit_value}"'
+                f'{flatatt(get_attr(self.attrs, SUBMIT))}>{self.opt_submit}</button>'
+            )
         )
 
     def render(self) -> str:
