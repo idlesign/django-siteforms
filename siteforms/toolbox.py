@@ -35,13 +35,25 @@ class SiteformsMixin(BaseForm):
             *args,
             request: HttpRequest = None,
             src: str = None,
+            id: str = '',
             **kwargs
     ):
-        self.src = src
-        """Form data source. E.g.: POST, GET."""
+        """
 
+        :param args:
+
+        :param request: Django request object.
+
+        :param src: Form data source. E.g.: POST, GET.
+
+        :param id: Form ID. If defined the form will be rendered
+            with this ID. This ID will also be used as auto_id prefix for fields.
+
+        :param kwargs:
+
+        """
+        self.src = src
         self.request = request
-        """Django request object."""
 
         self.is_submitted: bool = False
         """Whether this form is submitted and uses th submitted data."""
@@ -49,6 +61,12 @@ class SiteformsMixin(BaseForm):
         self.disabled_fields = set(kwargs.pop('disabled_fields', self.disabled_fields) or [])
         self.hidden_fields = set(kwargs.pop('hidden_fields', self.hidden_fields) or [])
         self.subforms = kwargs.pop('subforms', self.subforms) or {}
+
+        self.id = id
+
+        if id and 'auto_id' not in kwargs:
+            kwargs['auto_id'] = f'{id}_%s'
+
         self._subforms: Dict[str, 'SiteformsMixin'] = {}
 
         # Allow subform using the same submit value as the base form.

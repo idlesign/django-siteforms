@@ -445,14 +445,20 @@ class FormComposer:
 
         if self.opt_render_form:
             get_attr = partial(self._attrs_get, self.attrs)
-            request = self.form.request
+            form = self.form
+
+            form_id = form.id or ''
+            if form_id:
+                form_id = f' id="{form.id}"'
+
+            request = form.request
 
             csrf = ''
             if request:
                 csrf = f'<input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}">'
 
             html = (
-                f"<form {flatatt(get_attr(FORM))}>"
+                f'<form {flatatt(get_attr(FORM))}{form_id}>'
                 f"{csrf}"
                 f"{html}"
                 f"{self._render_submit()}"
