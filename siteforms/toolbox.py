@@ -72,13 +72,14 @@ class SiteformsMixin(BaseForm):
         # Allow subform using the same submit value as the base form.
         self._submit_value = kwargs.pop('submit_value', kwargs.get('prefix', self.prefix) or 'siteform')
 
-        self._initialize_pre(kwargs)
+        args = list(args)
+        self._initialize_pre(args=args, kwargs=kwargs)
 
         super().__init__(*args, **kwargs)
 
         self._initialize_post()
 
-    def _initialize_pre(self, kwargs):
+    def _initialize_pre(self, *, args, kwargs):
         # NB: mutates kwargs
 
         src = self.src
@@ -91,7 +92,12 @@ class SiteformsMixin(BaseForm):
             self.is_submitted = is_submitted
 
             if is_submitted and request.method == src:
-                kwargs['data'] = data
+                if args:
+                    # Prevent arguments clash.
+                    args[0] = data
+
+                else:
+                    kwargs['data'] = data
 
         self._initialize_subforms(kwargs)
 
