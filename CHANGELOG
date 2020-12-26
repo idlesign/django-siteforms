@@ -4,6 +4,7 @@ django-siteforms changelog
 
 Unreleased
 ----------
++ Add Russian locale.
 + Add shortcut for setting form ID and fields ID prefix.
 
 
