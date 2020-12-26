@@ -107,8 +107,9 @@ class SiteformsMixin(BaseForm):
         if self.is_submitted and self.is_multipart():
             self.files = self.request.FILES
 
+        initial = self.initial
         for field_name, subform in self._subforms.items():
-            initial_value = self.initial.get(field_name, UNSET)
+            initial_value = initial.get(field_name, UNSET)
             if initial_value is not UNSET:
                 subform.set_subform_value(initial_value)
 
@@ -128,6 +129,11 @@ class SiteformsMixin(BaseForm):
         return value
 
     def _initialize_subforms(self, kwargs):
+        subforms = self.subforms
+
+        if not subforms:
+            return {}
+
         kwargs = kwargs.copy()
         kwargs.pop('instance', None)
 
@@ -137,11 +143,12 @@ class SiteformsMixin(BaseForm):
             'submit_value': self._submit_value,
         })
 
-        subforms = {}
+        subforms_result = {}
 
-        for field_name, subform in self.subforms.items():
+        base_fields = self.base_fields
+        for field_name, subform in subforms.items():
 
-            field = self.base_fields[field_name]
+            field = base_fields[field_name]
 
             # Attach Composer automatically if none in subform.
             composer = getattr(subform, 'Composer', None)
@@ -153,11 +160,11 @@ class SiteformsMixin(BaseForm):
 
             # Instantiate subform classes with the same arguments.
             sub = subform(**{**kwargs, 'prefix': field_name})
-            subforms[field_name] = sub
+            subforms_result[field_name] = sub
 
             field.widget = SubformWidget(subform=sub)
 
-        self._subforms = subforms
+        self._subforms = subforms_result
 
     def is_valid(self):
         valid = super().is_valid()
