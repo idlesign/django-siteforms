@@ -43,17 +43,17 @@ Now let's see how to tune our form.
 
     class Composer(Bootstrap4):
 
-        opt_size='sm',  # Bootstrap 4 has sizes, so let's make our form small.
+        opt_size='sm'  # Bootstrap 4 has sizes, so let's make our form small.
 
         # Element (fields, groups, form, etc.) attributes are ruled by `attrs`.
         # Let's add rows=2 to our `contents` model field.
-        attrs={'contents': {'rows': 2}},
+        attrs={'contents': {'rows': 2}}
 
         # To group fields into named groups describe them in `groups`.
         groups={
             'basic': 'Basic attributes',
             'other': 'Other fields',
-        },
+        }
 
         # We apply custom layout to our form.
         layout = {
