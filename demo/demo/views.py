@@ -56,6 +56,8 @@ opts = {
     'opt_render_help': (True, False),
     'opt_placeholder_label': (True, False),
     'opt_placeholder_help': (True, False),
+    'opt_title_label': (True, False),
+    'opt_title_help': (True, False),
 
     # bs4
     'opt_columns': (True, False),

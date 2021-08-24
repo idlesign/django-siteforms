@@ -8,6 +8,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 INTERNAL_IPS = ['127.0.0.1']
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
