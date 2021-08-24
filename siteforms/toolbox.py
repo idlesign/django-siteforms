@@ -19,11 +19,21 @@ UNSET = set()
 class SiteformsMixin(BaseForm):
     """Mixin to extend native Django form tools."""
 
-    disabled_fields: Set[str] = None
-    """Fields to be disabled."""
+    disabled_fields: Union[Set[str], str] = None
+    """Fields to be disabled. Use __all__ to disable all fields (affects subforms).
+    
+    .. note:: This can also be passed into __init__() as the keyword-argument
+        with the same name.
+    
+    """
 
     hidden_fields: Set[str] = None
-    """Fields to be hidden."""
+    """Fields to be hidden.
+    
+    .. note:: This can also be passed into __init__() as the keyword-argument
+        with the same name.
+    
+    """
 
     subforms: Dict[str, Type['SiteformsMixin']] = None
     """Allows sub forms registration. Expects field name to subform class mapping."""
@@ -58,7 +68,8 @@ class SiteformsMixin(BaseForm):
         self.is_submitted: bool = False
         """Whether this form is submitted and uses th submitted data."""
 
-        self.disabled_fields = set(kwargs.pop('disabled_fields', self.disabled_fields) or [])
+        disabled = kwargs.get('disabled_fields', self.disabled_fields)
+        self.disabled_fields = disabled if isinstance(disabled, str) else set(disabled or [])
         self.hidden_fields = set(kwargs.pop('hidden_fields', self.hidden_fields) or [])
         self.subforms = kwargs.pop('subforms', self.subforms) or {}
 
@@ -75,6 +86,7 @@ class SiteformsMixin(BaseForm):
         args = list(args)
         self._initialize_pre(args=args, kwargs=kwargs)
 
+        kwargs.pop('disabled_fields', '')
         super().__init__(*args, **kwargs)
 
         self._initialize_post()
@@ -187,15 +199,17 @@ class SiteformsMixin(BaseForm):
     def render(self):
         fields = self.fields
 
-        # Apply disabled.
-        for field_name in self.disabled_fields:
-            field = fields[field_name]
-            field.disabled = True
+        disabled = self.disabled_fields
+        hidden = self.hidden_fields
 
-        # Apply hidden.
-        for field_name in self.hidden_fields:
-            field = fields[field_name]
-            field.widget = HiddenInput()
+        for field_name, field in fields.items():
+
+            if disabled == '__all__' or field_name in disabled:
+                field.disabled = True
+
+            if field_name in hidden:
+                field.widget = HiddenInput()
+
 
         return mark_safe(self.Composer(self).render())
 

@@ -13,8 +13,17 @@ Let's show how to build a simple form.
     class MyForm(ModelForm):
         """This form will show us how siteforms works."""
 
-        disabled_fields = {'somefield'}  # One way of disabling fields.
-        hidden_fields = {'otherfield'}  # One way of hiding fields.
+        disabled_fields = {'somefield'}
+        """One way of disabling fields. Use __all__ to disable all fields (affects subforms).
+        This can also be passed into __init__() as the keyword-argument with the same name.
+
+        """
+
+        hidden_fields = {'otherfield'}
+        """One way of hiding fields.
+        This can also be passed into __init__() as the keyword-argument with the same name.
+
+        """
 
         class Composer(Bootstrap4):
             """This will instruct siteforms to compose this
