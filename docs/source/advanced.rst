@@ -54,6 +54,10 @@ Options
 
 * ``opt_placeholder_help`` - Put hint (help text) into field's placeholders.
 
+* ``opt_title_label`` - Put title (verbose name) into field's title.
+
+* ``opt_title_help`` - Put hint (help text) into field's title.
+
 * ``opt_tag_help`` - Tag to be used for hints.
 
 * ``opt_tag_feedback`` - Tag to be used for feedback.

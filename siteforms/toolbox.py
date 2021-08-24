@@ -210,7 +210,6 @@ class SiteformsMixin(BaseForm):
             if field_name in hidden:
                 field.widget = HiddenInput()
 
-
         return mark_safe(self.Composer(self).render())
 
     def __str__(self):

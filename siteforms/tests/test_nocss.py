@@ -68,6 +68,14 @@ def test_nocss_placeholders(nocss_form_html):
     assert 'id_fchar_help" placeholder="fchar_help"' in html
 
 
+def test_nocss_title(nocss_form_html):
+    html = nocss_form_html(dict(opt_title_label=True))
+    assert 'id_fchar_help" title="Fchar_name"' in html
+
+    html = nocss_form_html(dict(opt_title_help=True))
+    assert 'id_fchar_help" title="fchar_help"' in html
+
+
 def test_nocss_disabled_plaintext(nocss_form_html):
     html = nocss_form_html(hidden_fields={'fchar'})
     assert '<input type="hidden" name="fchar" id="id_fchar">' in html

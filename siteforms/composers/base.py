@@ -55,6 +55,12 @@ class FormComposer:
     opt_render_help: bool = True
     """Render hints (help texts)."""
 
+    opt_title_label: bool = False
+    """Render label as title for form field."""
+
+    opt_title_help: bool = False
+    """Render help as title for form field."""
+
     opt_placeholder_label: bool = False
     """Put title (verbose name) into field's placeholders."""
 
@@ -217,11 +223,27 @@ class FormComposer:
         placeholder = attrs.get('placeholder')
 
         if placeholder is None:
+
             if self.opt_placeholder_label:
                 attrs['placeholder'] = field.label
 
             elif self.opt_placeholder_help:
                 attrs['placeholder'] = field.help_text
+
+        title = attrs.get('title')
+
+        if title is None:
+
+            title_label = self.opt_title_label
+            title_help = self.opt_title_help
+
+            if title_label or title_help:
+
+                if title_label:
+                    attrs['title'] = field.label
+
+                elif title_help:
+                    attrs['title'] = field.help_text
 
         out = field.as_widget(attrs=attrs)
 
