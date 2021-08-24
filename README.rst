@@ -2,16 +2,13 @@ django-siteforms
 ================
 https://github.com/idlesign/django-siteforms
 
-|release| |lic| |ci| |coverage|
+|release| |lic| |coverage|
 
 .. |release| image:: https://img.shields.io/pypi/v/django-siteforms.svg
     :target: https://pypi.python.org/pypi/django-siteforms
 
 .. |lic| image:: https://img.shields.io/pypi/l/django-siteforms.svg
     :target: https://pypi.python.org/pypi/django-siteforms
-
-.. |ci| image:: https://img.shields.io/travis/idlesign/django-siteforms/master.svg
-    :target: https://travis-ci.org/idlesign/django-siteforms
 
 .. |coverage| image:: https://img.shields.io/coveralls/idlesign/django-siteforms/master.svg
     :target: https://coveralls.io/r/idlesign/django-siteforms
