@@ -2,7 +2,7 @@ from typing import Optional, Tuple, Union
 
 from django.forms import FileInput, ClearableFileInput, CheckboxInput, BoundField, Select, SelectMultiple
 
-from .base import FormComposer, TypeAttrs, ALL_FIELDS, FORM, ALL_GROUPS, ALL_ROWS, SUBMIT  # noqa
+from .base import FormComposer, TypeAttrs, ALL_FIELDS, FORM, ALL_GROUPS, ALL_ROWS, SUBMIT, FIELDS_STACKED  # noqa
 
 
 class Bootstrap4(FormComposer):
@@ -218,4 +218,5 @@ class Bootstrap4(FormComposer):
 
     wrappers: TypeAttrs = {
         ALL_FIELDS: '<div class="form-group col">{field}</div>',
+        FIELDS_STACKED: '<div class="form-group col">{field}</div>',
     }

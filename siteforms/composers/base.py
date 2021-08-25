@@ -25,6 +25,12 @@ ALL_GROUPS = '__groups__'
 ALL_ROWS = '__rows__'
 """Denotes every row."""
 
+FIELDS_STACKED = '__stacked__'
+"""Denotes stacked fields when layout is applied.
+E.g. in 'group': {'a', ['b', 'c']} b and c are stacked.
+
+"""
+
 FORM = '__form__'
 """Denotes a form."""
 
@@ -104,7 +110,8 @@ class FormComposer:
         ALL_FIELDS: '<span>{field}</span>',
         ALL_ROWS: '<div {attrs}>{fields}</div>',
         ALL_GROUPS: '<fieldset {attrs}><legend>{title}</legend>{rows}</fieldset>',
-        SUBMIT: '{submit}'
+        SUBMIT: '{submit}',
+        FIELDS_STACKED: '<div>{field}</div>',
     }
     """Wrappers for fields, groups, rows, submit button."""
 
@@ -358,27 +365,56 @@ class FormComposer:
 
         return self._apply_wrapper(fld=field, content=out)
 
-    def _render_group(self, alias: str, *, rows: List[str]) -> str:
-        title = self.groups.get(alias, '')
+    def _render_group(self, alias: str, *, rows: List[Union[BoundField, List[BoundField]]]) -> str:
 
         get_attrs = self._attrs_get
         attrs = self.attrs
         wrappers = self.wrappers
         format_value = self._format_value
+        render_field_box = self._render_field_box
 
         def get_group_params(container: dict) -> dict:
             get_params = partial(get_attrs, container)
             return {**get_params(ALL_GROUPS), **get_params(alias)}
 
+        def render(field: Union[BoundField, List[Union[BoundField, str]]], wrap: bool = False) -> str:
+
+            if isinstance(field, list):
+                out = []
+
+                for subfield in field:
+
+                    if isinstance(subfield, list):
+                        rendered = render(subfield, wrap=len(subfield) > 1)
+
+                    elif isinstance(subfield, str):
+                        rendered = subfield
+
+                    else:
+                        rendered = render_field_box(subfield)
+
+                    out.append(rendered)
+
+                out = '\n'.join(out)
+                if wrap:
+                    out = format_value(wrapper_stacked, field=out)
+
+                return out
+
+            return render_field_box(field)
+
+        wrapper_stacked = get_attrs(wrappers, FIELDS_STACKED)
+        wrapper_rows = get_attrs(wrappers, ALL_ROWS)
+
         html = format_value(
             get_group_params(wrappers),
             attrs=flatatt(get_group_params(attrs)),
-            title=title,
+            title=self.groups.get(alias, ''),
             rows='\n'.join(
                 format_value(
-                    get_attrs(wrappers, ALL_ROWS),
+                    wrapper_rows,
                     attrs=flatatt(get_attrs(attrs, ALL_ROWS, obj=fields)),
-                    fields='\n'.join(fields),
+                    fields=render(fields),
                 )
                 for fields in rows
             )
@@ -387,10 +423,9 @@ class FormComposer:
         return html
 
     def _render_layout(self) -> str:
-        render_field_box = self._render_field_box
         form = self.form
 
-        fields = {name: render_field_box(form[name]) for name in form.fields}
+        fields = {name: form[name] for name in form.fields}
 
         form_layout = self.layout[FORM]
 
@@ -403,7 +438,8 @@ class FormComposer:
 
             if form_layout == ALL_FIELDS:
                 # all fields, no grouping
-                out.extend(fields.values())
+                render_field_box = self._render_field_box
+                out.extend(render_field_box(form[name]) for name in form.fields)
 
             else:  # pragma: nocover
                 raise ValueError(f'Unsupported form layout macros: {form_layout}')
@@ -445,8 +481,13 @@ class FormComposer:
                                 group.append([fields.pop(row)])
 
                         else:
-                            # Several fields in row.
-                            group.append([fields.pop(group_field, '') for group_field in row])
+                            # Several fields in a row.
+                            row_items = []
+                            for row_item in row:
+                                if not isinstance(row_item, list):
+                                    row_item = [row_item]
+                                row_items.append([fields.pop(row_subitem, '') for row_subitem in row_item])
+                            group.append(row_items)
 
             for group_alias, rows in grouped.items():
                 out.append(render_group(group_alias, rows=rows))

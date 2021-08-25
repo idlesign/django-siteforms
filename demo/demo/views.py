@@ -33,6 +33,7 @@ class ArticleFormMeta:
 
 
 class AuthorFormMeta:
+
     model = Author
     fields = '__all__'
 
@@ -42,7 +43,7 @@ opts = {
         {
             FORM: {
                 'basic': [
-                    ['title', 'date_created', 'author'],
+                    ['title', ['date_created', 'author', 'status']],
                     'contents',
                 ],
                 '_': ['dummy'],
