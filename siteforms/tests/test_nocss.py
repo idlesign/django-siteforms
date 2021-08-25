@@ -76,9 +76,19 @@ def test_nocss_title(nocss_form_html):
     assert 'id_fchar_help" title="fchar_help"' in html
 
 
-def test_nocss_disabled_plaintext(nocss_form_html):
+def test_nocss_hidden(nocss_form_html):
     html = nocss_form_html(hidden_fields={'fchar'})
     assert '<input type="hidden" name="fchar" id="id_fchar">' in html
+
+
+def test_nocss_disabled(nocss_form_html):
+    html = nocss_form_html(disabled_fields={'fchar'})
+    assert 'disabled id="id_fchar">' in html
+
+
+def test_nocss_readonly(nocss_form_html):
+    html = nocss_form_html(readonly_fields={'fchar'})
+    assert 'Fchar_name:</label><small' in html
 
 
 def test_nocss_groups(nocss_form_html, layout):

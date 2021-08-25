@@ -1,4 +1,5 @@
 import json
+from types import MethodType
 from typing import Type, Set, Dict, Union
 
 from django.forms import ModelForm as _ModelForm, Form as _Form, HiddenInput, BaseForm
@@ -7,7 +8,8 @@ from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
-from .widgets import SubformWidget
+from .fields import CustomBoundField
+from .widgets import SubformWidget, ReadOnlyWidget
 
 if False:  # pragma: nocover
     from .composers.base import FormComposer  # noqa
@@ -29,6 +31,14 @@ class SiteformsMixin(BaseForm):
 
     hidden_fields: Set[str] = None
     """Fields to be hidden.
+    
+    .. note:: This can also be passed into __init__() as the keyword-argument
+        with the same name.
+    
+    """
+
+    readonly_fields: Union[Set[str], str] = None
+    """Fields to make read-only. Use __all__ to disable all fields (affects subforms).
     
     .. note:: This can also be passed into __init__() as the keyword-argument
         with the same name.
@@ -70,7 +80,12 @@ class SiteformsMixin(BaseForm):
 
         disabled = kwargs.get('disabled_fields', self.disabled_fields)
         self.disabled_fields = disabled if isinstance(disabled, str) else set(disabled or [])
+
+        readonly = kwargs.get('readonly_fields', self.readonly_fields)
+        self.readonly_fields = readonly if isinstance(readonly, str) else set(readonly or [])
+
         self.hidden_fields = set(kwargs.pop('hidden_fields', self.hidden_fields) or [])
+
         self.subforms = kwargs.pop('subforms', self.subforms) or {}
 
         self.id = id
@@ -87,6 +102,8 @@ class SiteformsMixin(BaseForm):
         self._initialize_pre(args=args, kwargs=kwargs)
 
         kwargs.pop('disabled_fields', '')
+        kwargs.pop('readonly_fields', '')
+
         super().__init__(*args, **kwargs)
 
         self._initialize_post()
@@ -110,6 +127,13 @@ class SiteformsMixin(BaseForm):
 
                 else:
                     kwargs['data'] = data
+
+        def get_bound_field(self, form, field_name):
+            return CustomBoundField(form, self, field_name)
+
+        # todo maybe do it only once?
+        for field in self.base_fields.values():
+            field.get_bound_field = MethodType(get_bound_field, field)
 
         self._initialize_subforms(kwargs)
 
@@ -160,8 +184,6 @@ class SiteformsMixin(BaseForm):
         base_fields = self.base_fields
         for field_name, subform in subforms.items():
 
-            field = base_fields[field_name]
-
             # Attach Composer automatically if none in subform.
             composer = getattr(subform, 'Composer', None)
 
@@ -174,6 +196,7 @@ class SiteformsMixin(BaseForm):
             sub = subform(**{**kwargs, 'prefix': field_name})
             subforms_result[field_name] = sub
 
+            field = base_fields[field_name]
             field.widget = SubformWidget(subform=sub)
 
         self._subforms = subforms_result
@@ -197,18 +220,25 @@ class SiteformsMixin(BaseForm):
         return valid
 
     def render(self):
-        fields = self.fields
 
         disabled = self.disabled_fields
         hidden = self.hidden_fields
+        readonly = self.readonly_fields
 
-        for field_name, field in fields.items():
+        all_macro = '__all__'
 
-            if disabled == '__all__' or field_name in disabled:
-                field.disabled = True
+        for field in self:
+            field: CustomBoundField
+            field_name = field.name
+
+            if disabled == all_macro or field_name in disabled:
+                field.field.disabled = True
+
+            if readonly == all_macro or field_name in readonly:
+                field.field.widget = ReadOnlyWidget()
 
             if field_name in hidden:
-                field.widget = HiddenInput()
+                field.field.widget = HiddenInput()
 
         return mark_safe(self.Composer(self).render())
 

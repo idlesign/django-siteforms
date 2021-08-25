@@ -429,9 +429,7 @@ class FormComposer:
 
         form_layout = self.layout[FORM]
 
-        out = [
-            self._render_feedback_nonfield(),
-        ]
+        out = []
 
         if isinstance(form_layout, str):
             # Simple layout defined by macros.
@@ -439,7 +437,7 @@ class FormComposer:
             if form_layout == ALL_FIELDS:
                 # all fields, no grouping
                 render_field_box = self._render_field_box
-                out.extend(render_field_box(form[name]) for name in form.fields)
+                out.extend(render_field_box(field) for field in fields.values())
 
             else:  # pragma: nocover
                 raise ValueError(f'Unsupported form layout macros: {form_layout}')
@@ -491,6 +489,8 @@ class FormComposer:
 
             for group_alias, rows in grouped.items():
                 out.append(render_group(group_alias, rows=rows))
+
+        out.insert(0, self._render_feedback_nonfield())
 
         return '\n'.join(out)
 

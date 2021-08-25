@@ -25,6 +25,13 @@ Let's show how to build a simple form.
 
         """
 
+        readonly_fields = {'anotherfield'}
+        """One way of making fields readonly (to not to render input fields, but show a value).
+        Use __all__ to make all fields readonly (affects subforms).
+        This can also be passed into __init__() as the keyword-argument with the same name.
+
+        """
+
         class Composer(Bootstrap4):
             """This will instruct siteforms to compose this
             form using Bootstrap 4 styling.
@@ -68,14 +75,14 @@ Now let's see how to tune our form.
         layout = {
             FORM: {
                 'basic': [  # First we place `basic` group.
-                    ['title', 'date_created'],  # These two fields go into a row.
+                    # The following three fields are in the same row -
+                    # two fields in the right column are stacked.
+                    ['title', ['date_created',
+                               'date_updated']],
                     'contents',  # This one field goes into a separate row.
                 ],
                 # We place all the rest fields into `other` group.
                 'other': ALL_FIELDS,
             }
         }
-
-
-
 

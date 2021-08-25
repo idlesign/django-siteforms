@@ -6,7 +6,9 @@ Unreleased
 ----------
 + Added support for '__all__' in 'disabled_fields'.
 + Added support for 'opt_title_label' and 'opt_title_help' Composer options.
++ Added support for 'readonly_fields' in forms.
 + Layout. Added support for field stacking.
++ Form widgets now have 'bound_field' attribute to allow complex widgets rendering.
 
 v0.4.0 [2020-12-26]
 -------------------
