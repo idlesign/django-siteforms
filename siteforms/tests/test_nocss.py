@@ -109,6 +109,7 @@ def test_nocss_layout(nocss_form_html):
                 'some': [
                     ['fchar', ['fbool', 'ftext']],
                     ['file'],
+                    'fchoices',
                     ALL_FIELDS,
                 ],
             },
