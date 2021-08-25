@@ -87,8 +87,9 @@ def test_nocss_disabled(nocss_form_html):
 
 
 def test_nocss_readonly(nocss_form_html):
-    html = nocss_form_html(readonly_fields={'fchar'})
-    assert 'Fchar_name:</label><small' in html
+    thing = Thing(fchoices='two')
+    html = nocss_form_html(readonly_fields={'fchoices'}, instance=thing)
+    assert 'Fchoices_name:</label>2<small' in html
 
 
 def test_nocss_groups(nocss_form_html, layout):
@@ -98,7 +99,7 @@ def test_nocss_groups(nocss_form_html, layout):
     assert '<legend></legend>' in html  # no-title group
 
 
-def test_nocss_layout_allfields(nocss_form_html):
+def test_nocss_layout(nocss_form_html):
 
     layout = {
         'opt_render_labels': False,
@@ -106,7 +107,8 @@ def test_nocss_layout_allfields(nocss_form_html):
         'layout': {
             FORM: {
                 'some': [
-                    ['fchar', 'fbool'],
+                    ['fchar', ['fbool', 'ftext']],
+                    ['file'],
                     ALL_FIELDS,
                 ],
             },
@@ -114,9 +116,10 @@ def test_nocss_layout_allfields(nocss_form_html):
     }
     html = nocss_form_html(layout)
     assert (
-        '</legend><div ><span><input type="text" name="fchar" maxlength="50" aria-label="Fchar_name" '
-        'required id="id_fchar"></span>\n<span><input type="checkbox" name="fbool" aria-label="Fbool_name" '
-        'id="id_fbool"></span></div>\n<div >' in html)
+        '<span><input type="text" name="fchar" maxlength="50" aria-label="Fchar_name" required id="id_fchar"></span>\n'
+        '<div><span><input type="checkbox" name="fbool" aria-label="Fbool_name" id="id_fbool"></span>\n'
+        '<span><textarea name="ftext" cols="40" rows="10" aria-label="Ftext_name" required id="id_ftext">\n'
+        '</textarea></span></div></div>' in html)
 
 
 def test_nocss_nonmultipart(form):
