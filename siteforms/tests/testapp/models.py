@@ -8,6 +8,18 @@ class Another(models.Model):
         'Another', verbose_name='fparent_name', help_text='fparent_help', null=True, on_delete=models.CASCADE)
 
 
+class Additional(models.Model):
+
+    fnum = models.CharField(max_length=5, verbose_name='fnum_name', help_text='fnum_help')
+
+
+class Link(models.Model):
+
+    fadd = models.ForeignKey(Additional, verbose_name='fadd_lnk', on_delete=models.CASCADE)
+    fthing = models.ForeignKey('Thing', verbose_name='fthing_lnk', on_delete=models.CASCADE)
+    fmore = models.CharField(max_length=5, verbose_name='fmore_name', help_text='fmore_help')
+
+
 class Thing(models.Model):
 
     CHOICES1 = {
@@ -22,3 +34,5 @@ class Thing(models.Model):
     ftext = models.TextField(verbose_name='ftext_name', help_text='ftext_help')
     ffile = models.FileField(verbose_name='ffile_name')
     fforeign = models.ForeignKey(Another, verbose_name='fforeign_name', null=True, on_delete=models.CASCADE)
+    fm2m = models.ManyToManyField(Additional, verbose_name='fm2m_name')
+    fm2mthrough = models.ManyToManyField(Additional, verbose_name='fm2mthrough_name', through=Link)
