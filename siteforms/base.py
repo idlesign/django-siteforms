@@ -2,14 +2,11 @@ import json
 from types import MethodType
 from typing import Type, Set, Dict, Union
 
-from django.core.exceptions import FieldDoesNotExist
-from django.db.models import ForeignKey
 from django.forms import (
-    ModelForm as _ModelForm, Form as _Form, BaseForm,
+    BaseForm,
     formset_factory, modelformset_factory, inlineformset_factory,
     HiddenInput, Field,
 )
-from django.forms import fields  # noqa
 from django.http import HttpRequest
 from django.utils.datastructures import MultiValueDict
 from django.utils.safestring import mark_safe
@@ -241,7 +238,7 @@ class SiteformsMixin(BaseForm):
                 kwargs_form=kwargs,
             )
 
-            field: Field = base_fields[field_name]  # todo !!!!!!!!!!!!!! replace entire field to allow cleaned data
+            field: Field = base_fields[field_name]
             field.prepare_value = MethodType(prepare_value, field)
 
             field.widget = SubformWidget(subform=sub)
@@ -288,7 +285,7 @@ class SiteformsMixin(BaseForm):
             )
 
         elif mode == 'inline':
-            # todo
+            # todo test it
             factory_cls = inlineformset_factory(
                 self.base_fields[field_name].queryset.model,
                 self._meta.model,
@@ -355,45 +352,3 @@ class SiteformsMixin(BaseForm):
 
     def __str__(self):
         return self.render()
-
-
-class Form(SiteformsMixin, _Form):
-    """Base form with siteforms features enabled."""
-
-
-class ModelForm(SiteformsMixin, _ModelForm):
-    """Base model form with siteforms features enabled."""
-
-    def _get_subform(self, *, field_name: str, subform_cls: Type['SiteformsMixin'], kwargs_form: dict):
-        # When a field represents several forms (e.g. many-to-many).
-
-        base_field = self.base_fields[field_name]
-
-        if hasattr(base_field, 'queryset'):
-
-            formset_kwargs = self.formset_kwargs.get(field_name, {})
-            mode = 'model'
-            use_formset = True
-
-            try:
-                model_field = self._meta.model._meta.get_field(field_name)
-
-                if isinstance(model_field, ForeignKey):
-                    # mode = 'inline'  todo
-                    mode = 'default'
-                    use_formset = False
-
-            except FieldDoesNotExist:
-                pass
-
-            if use_formset:
-                sub = self._initialize_formset(
-                    field_name=field_name,
-                    subform_cls=subform_cls,
-                    kwargs_formset=formset_kwargs,
-                    kwargs_form=kwargs_form,
-                    mode=mode,
-                )
-                return sub
-
-        return super()._get_subform(field_name=field_name, subform_cls=subform_cls, kwargs_form=kwargs_form)
