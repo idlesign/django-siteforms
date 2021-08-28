@@ -4,11 +4,13 @@ django-siteforms changelog
 
 Unreleased
 ----------
++ Added basic formset support (many-to-many).
 + Added support for '__all__' in 'disabled_fields'.
 + Added support for 'opt_title_label' and 'opt_title_help' Composer options.
 + Added support for 'readonly_fields' in forms.
-+ Layout. Added support for field stacking.
++ Added support for FK models as subforms.
 + Form widgets now have 'bound_field' attribute to allow complex widgets rendering.
++ Layout. Added support for field stacking.
 
 v0.4.0 [2020-12-26]
 -------------------

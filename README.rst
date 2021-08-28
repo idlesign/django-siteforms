@@ -24,7 +24,7 @@ For those who consider maintaining templates-based forms solutions for Django a 
 Features:
 
 * Full form rendering support, including prolog and submit button
-* Subforms support (represent entire other form as a form field)
+* Subforms support (represent entire other form as a form field): JSON, Foreign Key, Many-to-Many
 * Field groups
 * Declarative attributes for elements
 * Simplified declarative forms layout, allowing fields ordering
