@@ -102,10 +102,10 @@ def test_formset_m2m(request_post, request_get, db_queries):
         class Meta(MyForm.Meta):
             fields = ['fchar', 'fm2m']
 
-    # form = MyFormWithSet(request=request_get(), src='POST')
-    # html = f'{form}'
-    # expected = '<input type="text" name="fm2m-0-fnum" maxlength="5" aria-label="Fnum_name" id="id_fm2m-0-fnum">'
-    # assert expected in html
+    form = MyFormWithSet(request=request_get(), src='POST')
+    html = f'{form}'
+    expected = '<input type="text" name="fm2m-0-fnum" maxlength="5" aria-label="Fnum_name" id="id_fm2m-0-fnum">'
+    assert expected in html
 
     # Add two m2m items.
     add1 = Additional.objects.create(fnum='xxx')
@@ -169,20 +169,20 @@ def test_fk(request_post, request_get):
         class Meta(MyForm.Meta):
             fields = ['fchar', 'fforeign']
 
-    # form = MyFormWithFk(request=request_get(), src='POST')
-    # html = f'{form}'
-    # assert 'name="fforeign-fsome" ' in html
-    #
+    form = MyFormWithFk(request=request_get(), src='POST')
+    html = f'{form}'
+    assert 'name="fforeign-fsome" ' in html
+
     # Add a foreign item.
     foreign = Another.objects.create(fsome='rrr')
     thing = Thing.objects.create(fchar='one', fforeign=foreign)
 
-    # # Check subform is rendered.
-    # form = MyFormWithFk(request=request_get(), src='POST', instance=thing)
-    # html = f'{form}'
-    # assert 'name="fchar" value="one" ' in html
-    # assert 'name="fforeign-fsome" value="rrr"' in html
-    #
+    # Check subform is rendered.
+    form = MyFormWithFk(request=request_get(), src='POST', instance=thing)
+    html = f'{form}'
+    assert 'name="fchar" value="one" ' in html
+    assert 'name="fforeign-fsome" value="rrr"' in html
+
     # Check data save.
     form = MyFormWithFk(request=request_post(data={
         'fchar': 'two',
