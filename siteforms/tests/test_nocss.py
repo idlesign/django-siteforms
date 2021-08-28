@@ -5,7 +5,6 @@ from django.forms import fields
 
 from siteforms.composers.base import FormComposer, FORM, ALL_FIELDS
 from siteforms.tests.testapp.models import Thing
-from siteforms.toolbox import Form
 
 
 class Composer(FormComposer):
@@ -126,69 +125,3 @@ def test_nocss_layout(nocss_form_html):
 def test_nocss_nonmultipart(form):
     frm = form(composer=Composer, some=fields.CharField())()
     assert '<form  method="POST">' in f'{frm}'
-
-
-@pytest.fixture
-def form_cls(form):
-
-    def form_cls_(model=None):
-
-        class SubForm1(Form):
-
-            first = fields.CharField(label='some', help_text='some help')
-            second = fields.ChoiceField(label='variants', choices={'1': 'one', '2': 'two'}.items())
-
-        form_kwargs = dict(
-            composer=Composer,
-            somefield=fields.CharField(),
-            fchar=fields.CharField(max_length=30),
-            subforms={'fchar': SubForm1},
-            model=model,
-        )
-        form_cls = form(**form_kwargs)
-
-        return form_cls
-
-    return form_cls_
-
-
-def test_nocss_subforms(form_cls, request_factory):
-
-    frm = form_cls()()
-    frm_html = f'{frm}'
-    assert 'fchar-first' in frm_html
-
-    def check_source(params, *, instance=None):
-        request = request_factory().get(params)
-        init_kwargs = dict(src='GET', request=request)
-        if instance:
-            init_kwargs['instance'] = instance
-        frm = form_cls(model=instance.__class__ if instance else None)(**init_kwargs)
-        valid = frm.is_valid()
-        return valid, frm
-
-    # Missing field.
-    valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2')
-    assert not valid
-    assert 'field is required.</div></div><small  id="id_fchar-first_help' in f'{frm}'
-
-    # Value is too long for subform field.
-    valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=valueistoolong')
-    assert not valid
-    assert 'Subform field "fchar": Ensure this value has at most 30' in f'{frm}'
-
-    # All is well.
-    valid, frm = check_source('some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=op')
-    assert valid
-    assert 'field is required' not in f'{frm}'
-
-    assert frm.cleaned_data == {'fchar': '{"first": "op", "second": "2"}', 'somefield': 'bc'}
-
-    # With instance.
-    thing = Thing(fchar='{"first": "dum", "second": "2"}',)
-    thing.save()
-
-    valid, frm = check_source('some', instance=thing)
-    frm_html = f'{frm}'
-    assert 'value="dum"' in frm_html
-    assert 'value="2" selected' in frm_html

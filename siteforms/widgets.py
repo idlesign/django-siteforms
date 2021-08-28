@@ -1,28 +1,38 @@
+from typing import Optional, Union
+
 from django.forms import Widget
 
-
 if False:  # pragma: nocover
-    from .fields import CustomBoundField  # noqa
-    from .toolbox import SiteformsMixin
+    from .fields import SubformBoundField  # noqa
+    from .base import SiteformsMixin
+    from .formsets import SiteformFormSetMixin
 
 
 class SubformWidget(Widget):
     """Widget representing a subform"""
 
-    template_name = ''  # Obey the requirement.
+    template_name = ''  # Satisfy the interface requirement.
 
-    def __init__(self, subform: 'SiteformsMixin', *, attrs=None):
-        super().__init__(attrs)
-        self.subform = subform
+    form: Optional[Union['SiteformsMixin', 'SiteformFormSetMixin']] = None
+    """Subform or a formset for which the widget is used. 
+    Bound runtime by .get_subform().
+    
+    """
+
+    bound_field: Optional['SubformBoundField'] = None
+    """Bound runtime by SubformBoundField when a widget is get."""
 
     def render(self, name, value, attrs=None, renderer=None):
-        return self.subform.render()
+        # Call form render, or a formset render, or a formset form renderer.
+        return self.bound_field.form.get_subform(name=name).render()
 
     def value_from_datadict(self, data, files, name):
-        subform = self.subform
-        if subform.is_valid():
-            return subform.get_subform_value()
-        return None
+        form = self.form
+        if form.is_valid():
+            # validate to get the cleaned data
+            # that would be used as data for subform
+            return form.cleaned_data
+        return super().value_from_datadict(data, files, name)
 
 
 class ReadOnlyWidget(Widget):
@@ -30,9 +40,11 @@ class ReadOnlyWidget(Widget):
     Useful to make cheap entity details pages by a simple reuse of forms from entity edit pages.
 
     """
+    bound_field: 'SubformBoundField' = None
+    """Bound runtime."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.bound_field: 'CustomBoundField' = None  # bound runtime by CustomBoundField
 
     def represent_value(self, value):
 

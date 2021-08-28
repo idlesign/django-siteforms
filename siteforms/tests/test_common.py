@@ -1,6 +1,9 @@
+import pytest
+from django.forms import fields
+
 from siteforms.composers.base import FormComposer
-from siteforms.tests.testapp.models import Thing, Another
-from siteforms.toolbox import ModelForm
+from siteforms.tests.testapp.models import Thing, Another, Additional
+from siteforms.toolbox import ModelForm, Form
 
 
 class Composer(FormComposer):
@@ -14,7 +17,20 @@ class MyAnotherForm(ModelForm):
         fields = '__all__'
 
     class Composer(Composer):
-        pass
+
+        opt_render_help = False
+        opt_render_labels = False
+
+
+class MyAdditionalForm(ModelForm):
+
+    class Meta:
+        model = Additional
+        fields = '__all__'
+
+    class Composer(Composer):
+        opt_render_help = False
+        opt_render_labels = False
 
 
 class MyForm(ModelForm):
@@ -40,7 +56,7 @@ def test_id(form_html):
     assert ' id="dum_fchar"' in html
 
 
-def test_args_data(form_html, request_post):
+def test_args_data(request_post):
 
     thing = Thing()
     thing.save()
@@ -64,3 +80,219 @@ def test_fields_disabled_all():
     rendered = f'{form}'
     assert 'disabled id="id_fchoices"' in rendered
     assert 'disabled id="id_fforeign-fsome"' in rendered  # in subform
+
+    # test not disabled anymore (base fields stay intact)
+    form = new_form_cls()
+    rendered = f'{form}'
+    assert 'disabled id="id_fchoices"' not in rendered
+    assert 'disabled id="id_fforeign-fsome"' not in rendered  # in subform
+
+
+def test_formset_m2m(request_post, request_get, db_queries):
+
+    class MyFormWithSet(MyForm):
+
+        subforms = {
+            'fm2m': MyAdditionalForm,
+        }
+
+        class Composer(MyForm.Composer):
+            opt_render_help = False
+
+        class Meta(MyForm.Meta):
+            fields = ['fchar', 'fm2m']
+
+    # form = MyFormWithSet(request=request_get(), src='POST')
+    # html = f'{form}'
+    # expected = '<input type="text" name="fm2m-0-fnum" maxlength="5" aria-label="Fnum_name" id="id_fm2m-0-fnum">'
+    # assert expected in html
+
+    # Add two m2m items.
+    add1 = Additional.objects.create(fnum='xxx')
+    add2 = Additional.objects.create(fnum='yyy')
+    add3 = Additional.objects.create(fnum='kkk')
+
+    thing = Thing.objects.create(fchar='one')
+    thing.fm2m.add(add1, add2)
+
+    # get instead of refresh to get brand new objects
+    thing = Thing.objects.get(id=thing.id)
+
+    # Check subform is rendered.
+    form = MyFormWithSet(request=request_get(), src='POST', instance=thing)
+    html = f'{form}'
+    assert 'name="fm2m-TOTAL_FORMS"' in html
+    assert '<input type="text" name="fm2m-0-fnum" value="xxx" ' in html
+    assert '<input type="text" name="fm2m-1-fnum" value="yyy" ' in html
+    assert ' value="kkk"' not in html
+
+    # Check data save.
+    form = MyFormWithSet(request=request_post(data={
+        'fchar': 'two',
+        'fm2m-TOTAL_FORMS': '3',
+        'fm2m-INITIAL_FORMS': '2',
+        'fm2m-MIN_NUM_FORMS': '0',
+        'fm2m-MAX_NUM_FORMS': '1000',
+        'fm2m-0-fnum': 'xxz',
+        'fm2m-0-id': '1',
+        'fm2m-1-fnum': 'yyz',
+        'fm2m-1-id': '2',
+        'fm2m-2-fnum': 'qqq',
+        'fm2m-2-id': '',
+        '__submit': 'siteform',
+    }), src='POST', instance=thing)
+
+    is_valid = form.is_valid()
+    assert is_valid
+    form.save()
+
+    thing = Thing.objects.get(id=thing.id)
+    assert thing.fchar == 'two'
+
+    add1 = Additional.objects.get(id=add1.id)
+    assert add1.fnum == 'xxz'
+    add2 = Additional.objects.get(id=add2.id)
+    assert add2.fnum == 'yyz'
+
+
+def test_fk(request_post, request_get):
+
+    class MyFormWithFk(MyForm):
+
+        subforms = {
+            'fforeign': MyAnotherForm,
+        }
+
+        class Composer(MyForm.Composer):
+            opt_render_help = False
+
+        class Meta(MyForm.Meta):
+            fields = ['fchar', 'fforeign']
+
+    # form = MyFormWithFk(request=request_get(), src='POST')
+    # html = f'{form}'
+    # assert 'name="fforeign-fsome" ' in html
+    #
+    # Add a foreign item.
+    foreign = Another.objects.create(fsome='rrr')
+    thing = Thing.objects.create(fchar='one', fforeign=foreign)
+
+    # # Check subform is rendered.
+    # form = MyFormWithFk(request=request_get(), src='POST', instance=thing)
+    # html = f'{form}'
+    # assert 'name="fchar" value="one" ' in html
+    # assert 'name="fforeign-fsome" value="rrr"' in html
+    #
+    # Check data save.
+    form = MyFormWithFk(request=request_post(data={
+        'fchar': 'two',
+        'fforeign-fsome': 'rru',
+        '__submit': 'siteform',
+    }), src='POST', instance=thing)
+
+    is_valid = form.is_valid()
+    assert is_valid
+
+    # get instead of refresh to get brand new objects
+    thing = Thing.objects.get(id=thing.id)
+    assert thing.fchar == 'one'
+
+    form.save()
+
+    thing = Thing.objects.get(id=thing.id)
+    foreign = Another.objects.get(id=foreign.id)
+
+    assert foreign.fsome == 'rru'
+    assert thing.fchar == 'two'  # todo notset
+
+
+@pytest.fixture
+def form_cls(form):
+
+    def form_cls_(*, model=None, use_fields=None):
+
+        class SubForm1(Form):
+
+            first = fields.CharField(label='some', help_text='some help')
+            second = fields.ChoiceField(label='variants', choices={'1': 'one', '2': 'two'}.items())
+
+        form_kwargs = dict(
+            composer=Composer,
+            somefield=fields.CharField(),
+            fchar=fields.CharField(max_length=30),
+            subforms={'fchar': SubForm1},
+            model=model,
+            fields=use_fields,
+        )
+        form_cls = form(**form_kwargs)
+
+        return form_cls
+
+    return form_cls_
+
+
+def test_json_subforms(form_cls, request_get, request_post):
+
+    def check_source(request, *, instance=None):
+        init_kwargs = dict(src=request.method, request=request)
+
+        if instance:
+            init_kwargs['instance'] = instance
+
+        form = form_cls(
+            model=instance.__class__ if instance else None,
+            use_fields=['fchar', 'ftext'],
+        )(**init_kwargs)
+
+        is_valid = form.is_valid()
+
+        return is_valid, form
+
+    frm = form_cls()()
+    frm_html = f'{frm}'
+    assert 'fchar-first' in frm_html
+
+    # Missing field.
+    valid, frm = check_source(request_get(
+        'some?__submit=siteform&somefield=bc&fchar-second=2'))
+    assert not valid
+    assert 'field is required.</div></div><small  id="id_fchar-first_help' in f'{frm}'
+
+    # Value is too long for subform field.
+    valid, frm = check_source(request_get(
+        'some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=valueistoolong'))
+    assert not valid
+    assert 'Ensure this value has at most 30' in f'{frm}'
+
+    # All is well.
+    valid, frm = check_source(request_get(
+        'some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=op'))
+    assert valid
+    assert 'field is required' not in f'{frm}'
+    assert frm.cleaned_data == {'fchar': '{"first": "op", "second": "2"}', 'somefield': 'bc'}
+
+    # With instance.
+    thing = Thing(fchar='{"first": "dum", "second": "2"}', ftext='one')
+    thing.save()
+
+    valid, frm = check_source(request_get('some'), instance=thing)
+    frm_html = f'{frm}'
+    assert 'value="dum"' in frm_html
+    assert 'value="2" selected' in frm_html
+
+    # With instance save.
+    valid, frm = check_source(request_post(data={
+        '__submit': 'siteform',
+        'somefield': 'bc',
+        'ftext': 'two',
+        'fchar-second': '1',
+        'fchar-first': 'hi',
+    }), instance=thing)
+
+    assert valid
+    frm.save()
+
+    # get instead of refresh to get brand new objects
+    thing = Thing.objects.get(id=thing.id)
+    assert thing.fchar == '{"first": "hi", "second": "1"}'
+    assert thing.ftext == 'two'

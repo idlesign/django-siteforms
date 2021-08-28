@@ -1,4 +1,4 @@
-from typing import Type, Union
+from typing import Type, Union, List
 
 import pytest
 from pytest_djangoapp import configure_djangoapp_plugin
@@ -39,6 +39,7 @@ def form():
             composer=None,
             model=None,
             options: dict = None,
+            fields: Union[List[str], str] = None,
             **kwargs
     ) -> Union[Type[Form], Type[ModelForm]]:
 
@@ -53,7 +54,7 @@ def form():
         form_cls = Form
 
         if model:
-            form_attrs['Meta'] = type('Meta', (object,), dict(model=model, fields='__all__'))
+            form_attrs['Meta'] = type('Meta', (object,), dict(model=model, fields=fields or '__all__'))
             form_cls = ModelForm
 
         return type('DynForm', (form_cls,), form_attrs)
