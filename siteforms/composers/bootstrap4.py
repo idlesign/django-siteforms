@@ -150,6 +150,15 @@ class Bootstrap4(FormComposer):
     def _get_attr_feedback(self, field: BoundField):
         return f"invalid-{'tooltip' if self.opt_feedback_tooltips else 'feedback'}"
 
+    def _render_feedback(self, field: BoundField) -> str:
+        out = super()._render_feedback(field)
+
+        if field.errors:
+            # prepend hidden input to workaround feedback not shown for subforms
+            out = f'<input type="hidden" class="form-control is-invalid">{out}'
+
+        return out
+
     def _render_field(self, field: BoundField, attrs: TypeAttrs = None) -> str:
         attrs = attrs or self._attrs_get_basic(self.attrs, field)
 

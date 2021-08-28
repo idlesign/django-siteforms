@@ -1,20 +1,16 @@
 import json
-from types import MethodType
-from typing import Type, Set, Dict, Union
+from contextlib import contextmanager
+from typing import Type, Set, Dict, Union, Generator, List
 
 from django.forms import (
     BaseForm,
-    formset_factory, modelformset_factory, inlineformset_factory,
-    HiddenInput, Field,
-)
+    modelformset_factory, HiddenInput, ModelMultipleChoiceField, ModelChoiceField, Field, )
 from django.http import HttpRequest
-from django.utils.datastructures import MultiValueDict
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext_lazy as _
 
-from .fields import CustomBoundField
-from .formsets import FormSet, ModelFormSet, InlineFormSet, SiteformFormSetMixin
-from .widgets import SubformWidget, ReadOnlyWidget
+from .fields import SubformBoundField
+from .formsets import ModelFormSet, SiteformFormSetMixin
+from .widgets import ReadOnlyWidget
 
 if False:  # pragma: nocover
     from .composers.base import FormComposer  # noqa
@@ -59,13 +55,16 @@ class SiteformsMixin(BaseForm):
     Example::
         {
             'subformfield1': {'extra': 2},
-            'subformfield1': {'validate_max': True},
+            'subformfield1': {'validate_max': True, 'min_num': 2},
         }
 
     .. note:: This can also be passed into __init__() as the keyword-argument
         with the same name.
     
     """
+
+    is_submitted: bool = False
+    """Whether this form is submitted and uses th submitted data."""
 
     Composer: Type['FormComposer'] = None
 
@@ -94,9 +93,6 @@ class SiteformsMixin(BaseForm):
         self.src = src
         self.request = request
 
-        self.is_submitted: bool = False
-        """Whether this form is submitted and uses th submitted data."""
-
         disabled = kwargs.get('disabled_fields', self.disabled_fields)
         self.disabled_fields = disabled if isinstance(disabled, str) else set(disabled or [])
 
@@ -115,14 +111,10 @@ class SiteformsMixin(BaseForm):
             kwargs['auto_id'] = f'{id}_%s'
 
         self._subforms: Dict[str, Union['SiteformsMixin', 'SiteformFormSetMixin']] = {}
+        self._subforms_kwargs = {}
 
         # Allow subform using the same submit value as the base form.
         self._submit_value = kwargs.pop('submit_value', kwargs.get('prefix', self.prefix) or 'siteform')
-
-        # Need this because the parent initializer
-        # is not run yet but they'd required in _initialize_pre().
-        self.data = MultiValueDict()
-        self.files = MultiValueDict()
 
         args = list(args)
         self._initialize_pre(args=args, kwargs=kwargs)
@@ -132,14 +124,20 @@ class SiteformsMixin(BaseForm):
 
         super().__init__(*args, **kwargs)
 
-        self._initialize_post()
+        # Attach files automatically.
+        if self.is_submitted and self.is_multipart():
+            self.files = self.request.FILES
+
+    def __str__(self):
+        return self.render()
 
     def _initialize_pre(self, *, args, kwargs):
-        # NB: mutates kwargs
+        # NB: may mutate args and kwargs
 
         src = self.src
         request = self.request
 
+        # Handle user supplied data.
         if src and request:
             data = getattr(request, src)
             is_submitted = data.get(self.Composer.opt_submit_name, '') == self._submit_value
@@ -158,176 +156,153 @@ class SiteformsMixin(BaseForm):
                 else:
                     kwargs['data'] = data
 
-        def get_bound_field(self, form, field_name):
-            return CustomBoundField(form, self, field_name)
+        if self.subforms:
+            # Prepare form arguments.
+            subforms_kwargs = kwargs.copy()
+            subforms_kwargs.pop('instance', None)
 
-        # todo maybe do it only once?
-        for field in self.base_fields.values():
-            # Swap bound field to our custom one.
-            field.get_bound_field = MethodType(get_bound_field, field)
+            subforms_kwargs.update({
+                'src': self.src,
+                'request': self.request,
+                'submit_value': self._submit_value,
+            })
+            self._subforms_kwargs = subforms_kwargs
 
-        self._initialize_subforms(kwargs)
+    def get_subform(self, *, name: str) -> 'SiteformsMixin':
 
-    def _initialize_post(self):
+        subform = self._subforms.get(name)
 
-        # Attach files automatically.
-        if self.is_submitted and self.is_multipart():
-            self.files = self.request.FILES
-
-        initial = self.initial
-        for field_name, subform in self._subforms.items():
-            subform.is_bound = any((subform.data, subform.files))  # actualize
-            initial_value = initial.get(field_name, UNSET)
-            if initial_value is not UNSET:
-                subform.set_subform_value(initial_value)
-
-    def set_subform_value(self, value: Union[dict, str]):
-        """Sets value for subform."""
-        if isinstance(value, str):
-            value = json.loads(value)
-        self.initial = value
-
-    def get_subform_value(self) -> dict:
-        """Returns data dict for subform widget."""
-        value = self.cleaned_data
-
-        if isinstance(value, dict):
-            value = json.dumps(value)
-
-        return value
-
-    def _initialize_subforms(self, kwargs):
-        subforms = self.subforms
-
-        if not subforms:
-            return
-
-        kwargs = kwargs.copy()
-        kwargs.pop('instance', None)
-
-        kwargs.update({
-            'src': self.src,
-            'request': self.request,
-            'submit_value': self._submit_value,
-        })
-
-        subforms_result = {}
-
-        def prepare_value(self, value):
-            # convert formset value to satisfy ModelMultipleChoiceField.clean()
-            if isinstance(value, list):
-                return [item['id'].pk for item in value if item['id']]
-            super(self.__class__, self).prepare_value(value)
-
-        base_fields = self.base_fields
-        for field_name, subform_cls in subforms.items():
+        if not subform:
+            subform_cls = self.subforms[name]
 
             # Attach Composer automatically if none in subform.
-            composer = getattr(subform_cls, 'Composer', None)
-
-            if composer is None:
+            if getattr(subform_cls, 'Composer', None) is None:
                 setattr(subform_cls, 'Composer', type('DynamicComposer', self.Composer.__bases__, {}))
 
             subform_cls.Composer.opt_render_form = False
 
-            # todo maybe a compound prefix kwargs['prefix'] = f'{prefix}-{field_name}'
+            kwargs_form = self._subforms_kwargs.copy()
 
-            sub = self._get_subform(
-                field_name=field_name,
+            subform = self._spawn_subform(
+                name=name,
                 subform_cls=subform_cls,
-                kwargs_form=kwargs,
+                kwargs_form=kwargs_form,
             )
 
-            field: Field = base_fields[field_name]
-            field.prepare_value = MethodType(prepare_value, field)
+            self._subforms[name] = subform
 
-            field.widget = SubformWidget(subform=sub)
+            # Set relevant field form attributes
+            # to have form access from other entities.
+            field = self.fields[name]
+            field.widget.form = subform
+            field.form = subform
 
-            subforms_result[field_name] = sub
+        return subform
 
-        self._subforms = subforms_result
-
-    def _get_subform(
+    def _spawn_subform(
             self,
             *,
-            field_name: str,
+            name: str,
             subform_cls: Type['SiteformsMixin'],
             kwargs_form: dict,
-    ):
-        # When a field represents a single item (e.g. JSONField).
-        return subform_cls(**{**kwargs_form, 'prefix': field_name})
+    ) -> Union['SiteformsMixin', 'SiteformFormSetMixin']:
 
-    def _initialize_formset(
-            self,
-            *,
-            field_name: str,
-            subform_cls: Type['SiteformsMixin'],
-            kwargs_formset: dict,
-            kwargs_form: dict,
-            mode: str = 'default',
-    ) -> SiteformFormSetMixin:
-        """Initialize a subform as a fieldset."""
+        original_field = self.base_fields[name].original_field
+        subform_mode = ''
 
-        if mode == 'model':
+        # todo check compound prefix for deeply nested forms kwargs['prefix'] = f'{prefix}-{field_name}'
 
-            factory_cls = modelformset_factory(
-                self.base_fields[field_name].queryset.model,
-                form=subform_cls,
-                formset=ModelFormSet,
-                **kwargs_formset
-            )
+        if hasattr(original_field, 'queryset'):
+            # Possibly a field represents FK or M2M.
 
-            return factory_cls(
-                data=self.data,
-                files=self.files,
-                prefix=field_name,
-                form_kwargs=kwargs_form,
-            )
+            if isinstance(original_field, ModelMultipleChoiceField):
+                # Many-to-many.
 
-        elif mode == 'inline':
-            # todo test it
-            factory_cls = inlineformset_factory(
-                self.base_fields[field_name].queryset.model,
-                self._meta.model,
-                form=subform_cls,
-                formset=InlineFormSet,
-                **kwargs_formset
-            )
-            return factory_cls(
-                data=self.data,
-                files=self.files,
-                prefix=field_name,
-                form_kwargs=kwargs_form,
-            )
+                formset_cls = modelformset_factory(
+                    original_field.queryset.model,
+                    form=subform_cls,
+                    formset=ModelFormSet,
+                    **self.formset_kwargs.get(name, {}),
+                )
 
-        factory_cls = formset_factory(subform_cls, formset=FormSet, **kwargs_formset)
+                queryset = None
+                instance = getattr(self, 'instance', None)
 
-        return factory_cls(
-            data=self.data,
-            files=self.files,
-            prefix=field_name,
-            form_kwargs=kwargs_form,
+                if instance:
+                    if instance.pk:
+                        queryset = getattr(instance, name).all()
+                    else:
+                        queryset = original_field.queryset.none()
+
+                return formset_cls(
+                    data=self.data or None,
+                    files=self.files or None,
+                    prefix=name,
+                    form_kwargs=kwargs_form,
+                    queryset=queryset,
+                )
+
+            elif isinstance(original_field, ModelChoiceField):
+                subform_mode = 'fk'
+
+        # Subform for JSON and FK.
+        subform = self._spawn_subform_inline(
+            name=name,
+            subform_cls=subform_cls,
+            kwargs_form=kwargs_form,
+            mode=subform_mode,
         )
 
+        return subform
+
+    def _spawn_subform_inline(
+            self,
+            *,
+            name: str,
+            subform_cls: Type['SiteformsMixin'],
+            kwargs_form: dict,
+            mode: str = '',
+    ) -> 'SiteformsMixin':
+
+        mode = mode or 'json'
+
+        initial_value = self.initial.get(name, UNSET)
+        instance_value = getattr(getattr(self, 'instance', None), name, UNSET)
+
+        if initial_value is not UNSET:
+
+            if mode == 'json':
+                # In case of JSON we get initial from the base form initial by key.
+                kwargs_form['initial'] = json.loads(initial_value)
+
+        if instance_value is not UNSET:
+
+            if mode == 'fk':
+                kwargs_form.update({
+                    'instance': instance_value,
+                    'data': self.data or None,
+                    'files': self.files or None,
+                })
+
+        return subform_cls(**{**kwargs_form, 'prefix': name})
+
+    def _iter_subforms(self) -> Generator['SiteformsMixin', None, None]:
+        for name in self.subforms:
+            yield self.get_subform(name=name)
+
     def is_valid(self):
-        valid = super().is_valid()
+        valid = True
 
-        errors = self.errors
-
-        for fieldname, subform in self._subforms.items():
+        for subform in self._iter_subforms():
             subform_valid = subform.is_valid()
             valid &= subform_valid
 
-            if subform_valid:
-                for error in errors.get(fieldname, []):
-                    self.add_error(
-                        None,
-                        _('Subform field "%(name)s": %(error)s') %
-                        {'name': fieldname, 'error': str(error)})
+        valid &= super().is_valid()
 
         return valid
 
-    def render(self):
+    def render(self) -> str:
+        """Renders this form as a string."""
 
         disabled = self.disabled_fields
         hidden = self.hidden_fields
@@ -335,20 +310,44 @@ class SiteformsMixin(BaseForm):
 
         all_macro = '__all__'
 
+        def store_restore(base_field: Field, attrs: List[str]):
+            """Since Django's BoundField uses form base field attributes,
+            but not its own (e.g. for disabled in .build_widget_attrs()
+            we are forced to store and restore previous values to not to have side
+            effects on form classes reuse.
+
+            :param base_field:
+            :param attrs:
+
+            """
+            for attr in attrs:
+                # restore
+                tmp_attr = f'_{attr}'
+                val = getattr(base_field, tmp_attr, None)
+
+                if val is not None:
+                    setattr(base_field, attr, val)
+                    delattr(base_field, tmp_attr)
+
+                else:
+                    setattr(base_field, f'_{attr}', getattr(base_field, attr))
+
+        mutated_fields = ['disabled', 'widget']
+
         for field in self:
-            field: CustomBoundField
+            field: SubformBoundField
             field_name = field.name
 
+            base_field = field.field
+            store_restore(base_field, mutated_fields)
+
             if disabled == all_macro or field_name in disabled:
-                field.field.disabled = True
+                base_field.disabled = True
 
             if readonly == all_macro or field_name in readonly:
-                field.field.widget = ReadOnlyWidget()
+                base_field.widget = ReadOnlyWidget()
 
             if field_name in hidden:
-                field.field.widget = HiddenInput()
+                base_field.widget = HiddenInput()
 
         return mark_safe(self.Composer(self).render())
-
-    def __str__(self):
-        return self.render()

@@ -4,13 +4,19 @@ from django.db import models
 class Another(models.Model):
 
     fsome = models.CharField(max_length=20, verbose_name='fsome_name', help_text='fsome_help')
-    fparent = models.ForeignKey(
-        'Another', verbose_name='fparent_name', help_text='fparent_help', null=True, on_delete=models.CASCADE)
+    fadd = models.ForeignKey(
+        'Additional', verbose_name='fadd_name', help_text='fadd_help', null=True, blank=True,
+        on_delete=models.CASCADE)
 
 
 class Additional(models.Model):
 
     fnum = models.CharField(max_length=5, verbose_name='fnum_name', help_text='fnum_help')
+
+
+class Additional2(models.Model):
+
+    fmun = models.CharField(max_length=5, verbose_name='fmun_name')
 
 
 class Link(models.Model):
@@ -35,4 +41,3 @@ class Thing(models.Model):
     ffile = models.FileField(verbose_name='ffile_name')
     fforeign = models.ForeignKey(Another, verbose_name='fforeign_name', null=True, on_delete=models.CASCADE)
     fm2m = models.ManyToManyField(Additional, verbose_name='fm2m_name')
-    fm2mthrough = models.ManyToManyField(Additional, verbose_name='fm2mthrough_name', through=Link)
