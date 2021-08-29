@@ -2,8 +2,8 @@ django-siteforms changelog
 ==========================
 
 
-Unreleased
-----------
+v0.5.0 [2021-08-29]
+-------------------
 + Added basic formset support (many-to-many).
 + Added support for '__all__' in 'disabled_fields'.
 + Added support for 'opt_title_label' and 'opt_title_help' Composer options.
