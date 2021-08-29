@@ -2,7 +2,7 @@ import pytest
 from django.forms import fields
 
 from siteforms.composers.base import FormComposer
-from siteforms.tests.testapp.models import Thing, Another, Additional
+from siteforms.tests.testapp.models import Thing, Another, Additional, AnotherThing
 from siteforms.toolbox import ModelForm, Form
 
 
@@ -41,6 +41,16 @@ class MyForm(ModelForm):
 
     class Composer(Composer):
         pass
+
+
+class MyAnotherThingForm(ModelForm):
+
+    class Meta:
+        model = AnotherThing
+        fields = '__all__'
+
+    class Composer(Composer):
+        opt_render_help = False
 
 
 def test_id(form_html):
@@ -118,7 +128,7 @@ def test_formset_m2m(request_post, request_get, db_queries):
     # get instead of refresh to get brand new objects
     thing = Thing.objects.get(id=thing.id)
 
-    # Check subform is rendered.
+    # Check subform is rendered with instance data.
     form = MyFormWithSet(request=request_get(), src='POST', instance=thing)
     html = f'{form}'
     assert 'name="fm2m-TOTAL_FORMS"' in html
@@ -153,6 +163,79 @@ def test_formset_m2m(request_post, request_get, db_queries):
     assert add1.fnum == 'xxz'
     add2 = Additional.objects.get(id=add2.id)
     assert add2.fnum == 'yyz'
+
+
+def test_formset_m2m_nested(request_post, request_get, db_queries):
+
+    class MyAnotherNestedForm(MyAnotherForm):
+
+        subforms = {
+            'fadd': MyAdditionalForm,
+        }
+
+    class MyFormWithSet(MyAnotherThingForm):
+
+        subforms = {
+            'fm2m': MyAnotherNestedForm,
+        }
+
+    form = MyFormWithSet(request=request_get(), src='POST')
+    html = f'{form}'
+    assert 'name="fm2m-0-fadd-fnum" maxlength="5" ' in html
+
+    add1 = Additional.objects.create(fnum='eee')
+    add2 = Additional.objects.create(fnum='www')
+    another1 = Another.objects.create(fsome='888', fadd=add1)
+    another2 = Another.objects.create(fsome='999', fadd=add2)
+
+    thing = AnotherThing.objects.create(fchar='one')
+    thing.fm2m.add(another1, another2)
+
+    # get instead of refresh to get brand new objects
+    thing = AnotherThing.objects.get(id=thing.id)
+
+    # Check subform is rendered with instance data.
+    form = MyFormWithSet(request=request_get(), src='POST', instance=thing)
+    html = f'{form}'
+    assert 'name="fm2m-TOTAL_FORMS"' in html
+    assert 'name="fm2m-0-fsome" value="888" ' in html
+    assert 'name="fm2m-0-fadd-fnum" value="eee" ' in html
+
+    # Check data save.
+    form = MyFormWithSet(request=request_post(data={
+        'fchar': 'two',
+        'fm2m-TOTAL_FORMS': '3',
+        'fm2m-INITIAL_FORMS': '2',
+        'fm2m-MIN_NUM_FORMS': '0',
+        'fm2m-MAX_NUM_FORMS': '1000',
+        'fm2m-0-fsome': '888-y',
+        'fm2m-0-fadd-fnum': 'eee-y',
+        'fm2m-0-id': '1',
+        'fm2m-1-fsome': '999-y',
+        'fm2m-1-fadd-fnum': 'www-y',
+        'fm2m-1-id': '2',
+        'fm2m-2-fsome': '',
+        'fm2m-2-fadd-fnum': '',
+        'fm2m-2-id': '',
+        '__submit': 'siteform',
+    }), src='POST', instance=thing)
+
+    is_valid = form.is_valid()
+    assert is_valid
+    form.save()
+
+    thing = AnotherThing.objects.get(id=thing.id)
+    assert thing.fchar == 'two'
+
+    another1 = Another.objects.get(id=another1.id)
+    assert another1.fsome == '888-y'
+    another2 = Another.objects.get(id=another2.id)
+    assert another2.fsome == '999-y'
+
+    add1 = Additional.objects.get(id=add1.id)
+    assert add1.fnum == 'eee-y'
+    add2 = Additional.objects.get(id=add2.id)
+    assert add2.fnum == 'www-y'
 
 
 def test_fk(request_post, request_get):

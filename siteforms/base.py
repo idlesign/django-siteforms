@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 
 from .fields import SubformBoundField
 from .formsets import ModelFormSet, SiteformFormSetMixin
+from .utils import bind_subform
 from .widgets import ReadOnlyWidget
 
 if False:  # pragma: nocover
@@ -239,8 +240,7 @@ class SiteformsMixin(BaseForm):
             # Set relevant field form attributes
             # to have form access from other entities.
             field = self.fields[name]
-            field.widget.form = subform
-            field.form = subform
+            bind_subform(subform=subform, field=field)
 
         return subform
 

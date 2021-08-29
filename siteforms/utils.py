@@ -1,5 +1,10 @@
 from typing import Optional, Union
 
+from django.forms import Field
+
+if False:  # pragma: nocover
+    from .base import TypeSubform  # noqa
+
 
 def merge_dict(src: Optional[dict], dst: Union[dict, str]) -> dict:
 
@@ -19,3 +24,14 @@ def merge_dict(src: Optional[dict], dst: Union[dict, str]) -> dict:
         out[k] = v
 
     return out
+
+
+def bind_subform(*, subform: 'TypeSubform', field: Field):
+    """Initializes field attributes thus linking them to a subform.
+
+    :param subform:
+    :param field:
+
+    """
+    field.widget.form = subform
+    field.form = subform

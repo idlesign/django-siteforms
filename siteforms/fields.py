@@ -29,7 +29,15 @@ class SubformField(Field):
         if isinstance(original_field, ModelChoiceField):
 
             if isinstance(self.form, BaseFormSet):
-                value = [item['id'].id for item in value if item['id']]  # Skip empty forms
+                value_ = []
+
+                for item in value:
+                    item_id = item.get('id')  # Could be an empty (new item) form
+                    if item_id:
+                        # item id here is actually a model instance
+                        value_.append(item['id'].id)
+
+                value = value_
 
             else:
                 # For a subform with a model (FK).

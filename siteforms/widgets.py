@@ -12,7 +12,7 @@ class SubformWidget(Widget):
 
     template_name = ''  # Satisfy the interface requirement.
 
-    form: Optional[TypeSubform] = None
+    form: Optional['TypeSubform'] = None
     """Subform or a formset for which the widget is used. 
     Bound runtime by .get_subform().
     
