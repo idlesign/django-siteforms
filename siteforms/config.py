@@ -7,6 +7,3 @@ class SiteformsConfig(AppConfig):
 
     name = 'siteforms'
     verbose_name = _('Siteforms')
-
-    # def ready(self):
-    #     """Application initialization."""

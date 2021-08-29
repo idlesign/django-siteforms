@@ -4,8 +4,7 @@ from django.forms import Widget
 
 if False:  # pragma: nocover
     from .fields import SubformBoundField  # noqa
-    from .base import SiteformsMixin
-    from .formsets import SiteformFormSetMixin
+    from .base import TypeSubform
 
 
 class SubformWidget(Widget):
@@ -13,7 +12,7 @@ class SubformWidget(Widget):
 
     template_name = ''  # Satisfy the interface requirement.
 
-    form: Optional[Union['SiteformsMixin', 'SiteformFormSetMixin']] = None
+    form: Optional[TypeSubform] = None
     """Subform or a formset for which the widget is used. 
     Bound runtime by .get_subform().
     

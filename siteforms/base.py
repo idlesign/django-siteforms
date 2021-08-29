@@ -1,10 +1,11 @@
 import json
-from contextlib import contextmanager
 from typing import Type, Set, Dict, Union, Generator, List
 
 from django.forms import (
     BaseForm,
-    modelformset_factory, HiddenInput, ModelMultipleChoiceField, ModelChoiceField, Field, )
+    modelformset_factory, HiddenInput,
+    ModelMultipleChoiceField, ModelChoiceField, Field,
+)
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
@@ -17,6 +18,7 @@ if False:  # pragma: nocover
 
 
 UNSET = set()
+TypeSubform = Union['SiteformsMixin', SiteformFormSetMixin]
 
 
 class SiteformsMixin(BaseForm):
@@ -73,7 +75,8 @@ class SiteformsMixin(BaseForm):
             *args,
             request: HttpRequest = None,
             src: str = None,
-            id: str = '',
+            id: str = '',  # noqa
+            parent: 'SiteformsMixin' = None,
             **kwargs
     ):
         """
@@ -86,6 +89,8 @@ class SiteformsMixin(BaseForm):
 
         :param id: Form ID. If defined the form will be rendered
             with this ID. This ID will also be used as auto_id prefix for fields.
+
+        :param parent: Parent form for a subform.
 
         :param kwargs:
 
@@ -110,8 +115,9 @@ class SiteformsMixin(BaseForm):
         if id and 'auto_id' not in kwargs:
             kwargs['auto_id'] = f'{id}_%s'
 
-        self._subforms: Dict[str, Union['SiteformsMixin', 'SiteformFormSetMixin']] = {}
+        self._subforms: Dict[str, TypeSubform] = {}  # noqa
         self._subforms_kwargs = {}
+        self.parent = parent
 
         # Allow subform using the same submit value as the base form.
         self._submit_value = kwargs.pop('submit_value', kwargs.get('prefix', self.prefix) or 'siteform')
@@ -165,10 +171,44 @@ class SiteformsMixin(BaseForm):
                 'src': self.src,
                 'request': self.request,
                 'submit_value': self._submit_value,
+                'parent': self,
             })
             self._subforms_kwargs = subforms_kwargs
 
-    def get_subform(self, *, name: str) -> 'SiteformsMixin':
+    def _get_full_prefix(self) -> str:
+        """Get a full prefix for this form which includes all parents prefixes."""
+
+        prefix = []
+
+        self_prefix = self.prefix
+
+        if self_prefix:
+            prefix.append(self_prefix)
+
+            parent = self.parent
+            while parent:
+                parent_prefix = parent.prefix
+
+                if not parent_prefix:
+                    break
+
+                prefix.append(prefix)
+                parent = parent.parent
+
+        return '-'.join(reversed(prefix))
+
+    def get_subform(self, *, name: str) -> TypeSubform:
+        """Returns a subform instance by its name
+        (or possibly a name of a nested subform field, representing a form).
+
+        :param name:
+
+        """
+        prefix = self._get_full_prefix()
+
+        if prefix:
+            # Strip down field name prefix to get a form name.
+            name = name.replace(prefix, '', 1).lstrip('-')
 
         subform = self._subforms.get(name)
 
@@ -182,6 +222,11 @@ class SiteformsMixin(BaseForm):
             subform_cls.Composer.opt_render_form = False
 
             kwargs_form = self._subforms_kwargs.copy()
+
+            # Construct a full (including parent prefixes) name prefix
+            # to support deeply nested forms.
+            if prefix:
+                kwargs_form['prefix'] = f'{prefix}-{name}'
 
             subform = self._spawn_subform(
                 name=name,
@@ -205,12 +250,10 @@ class SiteformsMixin(BaseForm):
             name: str,
             subform_cls: Type['SiteformsMixin'],
             kwargs_form: dict,
-    ) -> Union['SiteformsMixin', 'SiteformFormSetMixin']:
+    ) -> TypeSubform:
 
         original_field = self.base_fields[name].original_field
         subform_mode = ''
-
-        # todo check compound prefix for deeply nested forms kwargs['prefix'] = f'{prefix}-{field_name}'
 
         if hasattr(original_field, 'queryset'):
             # Possibly a field represents FK or M2M.
@@ -284,9 +327,9 @@ class SiteformsMixin(BaseForm):
                     'files': self.files or None,
                 })
 
-        return subform_cls(**{**kwargs_form, 'prefix': name})
+        return subform_cls(**{'prefix': name, **kwargs_form})
 
-    def _iter_subforms(self) -> Generator['SiteformsMixin', None, None]:
+    def _iter_subforms(self) -> Generator[TypeSubform, None, None]:
         for name in self.subforms:
             yield self.get_subform(name=name)
 
@@ -310,27 +353,27 @@ class SiteformsMixin(BaseForm):
 
         all_macro = '__all__'
 
-        def store_restore(base_field: Field, attrs: List[str]):
+        def store_restore(base_fld: Field, attrs: List[str]):
             """Since Django's BoundField uses form base field attributes,
             but not its own (e.g. for disabled in .build_widget_attrs()
             we are forced to store and restore previous values to not to have side
             effects on form classes reuse.
 
-            :param base_field:
+            :param base_fld:
             :param attrs:
 
             """
             for attr in attrs:
-                # restore
+
                 tmp_attr = f'_{attr}'
-                val = getattr(base_field, tmp_attr, None)
+                val = getattr(base_fld, tmp_attr, None)
 
                 if val is not None:
-                    setattr(base_field, attr, val)
-                    delattr(base_field, tmp_attr)
+                    setattr(base_fld, attr, val)
+                    delattr(base_fld, tmp_attr)
 
                 else:
-                    setattr(base_field, f'_{attr}', getattr(base_field, attr))
+                    setattr(base_fld, f'_{attr}', getattr(base_fld, attr))
 
         mutated_fields = ['disabled', 'widget']
 

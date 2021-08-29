@@ -7,7 +7,7 @@ from .widgets import SubformWidget
 from .formsets import BaseFormSet
 
 if False:  # pragma: nocover
-    from .base import SiteformsMixin  # noqa
+    from .base import TypeSubform  # noqa
 
 
 class SubformField(Field):
@@ -18,7 +18,7 @@ class SubformField(Field):
     def __init__(self, *args, original_field, **kwargs):
         super().__init__(*args, **kwargs)
         self.original_field = original_field
-        self.form: Optional['SiteformsMixin'] = None
+        self.form: Optional['TypeSubform'] = None
 
     def get_bound_field(self, form, field_name):
         return SubformBoundField(form, self, field_name)

@@ -203,7 +203,64 @@ def test_fk(request_post, request_get):
     foreign = Another.objects.get(id=foreign.id)
 
     assert foreign.fsome == 'rru'
-    assert thing.fchar == 'two'  # todo notset
+    assert thing.fchar == 'two'
+
+
+def test_fk_nested(request_post, request_get):
+
+    class MyAnotherNestedForm(MyAnotherForm):
+
+        subforms = {
+            'fadd': MyAdditionalForm,
+        }
+
+    class MyFormWithFkNested(MyForm):
+
+        subforms = {
+            'fforeign': MyAnotherNestedForm,
+        }
+
+        class Composer(MyForm.Composer):
+            opt_render_help = False
+
+        class Meta(MyForm.Meta):
+            fields = ['fchar', 'fforeign']
+
+    form = MyFormWithFkNested(request=request_get(), src='POST')
+    html = f'{form}'
+    assert 'name="fforeign-fadd-fnum" ' in html
+
+    # Add a foreign item.
+    additional = Additional.objects.create(fnum='444')
+    foreign = Another.objects.create(fsome='rrr', fadd=additional)
+    thing = Thing.objects.create(fchar='one', fforeign=foreign)
+
+    # Check subform is rendered with instance data.
+    form = MyFormWithFkNested(request=request_get(), src='POST', instance=thing)
+    html = f'{form}'
+    assert 'name="fchar" value="one" ' in html
+    assert 'name="fforeign-fsome" value="rrr" ' in html
+    assert 'name="fforeign-fadd-fnum" value="444" ' in html
+
+    # Check data save.
+    form = MyFormWithFkNested(request=request_post(data={
+        'fchar': 'two',
+        'fforeign-fsome': 'rru',
+        'fforeign-fadd-fnum': '555',
+        '__submit': 'siteform',
+    }), src='POST', instance=thing)
+
+    is_valid = form.is_valid()
+    assert is_valid
+    form.save()
+
+    thing = Thing.objects.get(id=thing.id)
+    foreign = Another.objects.get(id=foreign.id)
+    additional = Additional.objects.get(id=additional.id)
+
+    assert foreign.fsome == 'rru'
+    assert thing.fchar == 'two'
+    assert additional.fnum == '555'
 
 
 @pytest.fixture

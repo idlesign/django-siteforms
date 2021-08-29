@@ -8,6 +8,7 @@ Unreleased
 + Added support for '__all__' in 'disabled_fields'.
 + Added support for 'opt_title_label' and 'opt_title_help' Composer options.
 + Added support for 'readonly_fields' in forms.
++ Added support for deeply nested forms.
 + Added support for FK models as subforms.
 + Form widgets now have 'bound_field' attribute to allow complex widgets rendering.
 + Layout. Added support for field stacking.
