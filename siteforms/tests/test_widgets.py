@@ -25,5 +25,5 @@ def test_basic(form):
     html = f'{form}'
     assert 'one</div>' in html  # Simple readonly
     assert 'that</div>' in html  # FK
-    assert '&lt;uknown (q)&gt;</div>' in html  # Unknown in choices
+    assert '&lt;unknown (q)&gt;</div>' in html  # Unknown in choices
     assert 'mywidgetdata' in html  # data from template

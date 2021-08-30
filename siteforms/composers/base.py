@@ -2,7 +2,7 @@ from collections import defaultdict
 from functools import partial
 from typing import Dict, Any, Optional, Union, List, Type
 
-from django.forms import BoundField, CheckboxInput, Form, Field
+from django.forms import BoundField, CheckboxInput, Form
 from django.forms.utils import flatatt
 from django.forms.widgets import Input
 from django.middleware.csrf import get_token

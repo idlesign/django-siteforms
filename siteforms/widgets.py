@@ -2,6 +2,7 @@ from typing import Optional, Any
 
 from django.forms import Widget, ModelChoiceField
 from django.forms.utils import flatatt
+from django.utils.translation import gettext_lazy as _
 
 from .utils import UNSET
 
@@ -70,7 +71,8 @@ class ReadOnlyWidget(Widget):
                 use_original_value_format = False
                 if value is not None:
                     # Do not try to get title for None.
-                    value = dict(choices or {}).get(value, f'&lt;uknown ({value})&gt;')
+                    unknown = _('unknown')
+                    value = dict(choices or {}).get(value, f'&lt;{unknown} ({value})&gt;')
 
         if use_original_value_format:
             original_widget = self.original_widget
