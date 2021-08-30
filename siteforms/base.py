@@ -1,17 +1,16 @@
 import json
-from typing import Type, Set, Dict, Union, Generator, List
+from typing import Type, Set, Dict, Union, Generator, Callable
 
 from django.forms import (
     BaseForm,
     modelformset_factory, HiddenInput,
-    ModelMultipleChoiceField, ModelChoiceField, Field,
-)
+    ModelMultipleChoiceField, ModelChoiceField, )
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
 from .fields import SubformBoundField
 from .formsets import ModelFormSet, SiteformFormSetMixin
-from .utils import bind_subform, UNSET
+from .utils import bind_subform, UNSET, temporary_fields_patch
 from .widgets import ReadOnlyWidget
 
 if False:  # pragma: nocover
@@ -334,18 +333,29 @@ class SiteformsMixin(BaseForm):
             yield self.get_subform(name=name)
 
     def is_valid(self):
-        valid = True
 
-        for subform in self._iter_subforms():
-            subform_valid = subform.is_valid()
-            valid &= subform_valid
+        super_ = super()
 
-        valid &= super().is_valid()
+        def is_valid_():
+            valid = True
 
-        return valid
+            for subform in self._iter_subforms():
+                subform_valid = subform.is_valid()
+                valid &= subform_valid
+
+            valid &= super_.is_valid()
+
+            return valid
+
+        return self._apply_attrs(callback=is_valid_)
 
     def render(self) -> str:
         """Renders this form as a string."""
+        def render_():
+            return mark_safe(self.Composer(self).render())
+        return self._apply_attrs(callback=render_)
+
+    def _apply_attrs(self, callback: Callable):
 
         disabled = self.disabled_fields
         hidden = self.hidden_fields
@@ -353,53 +363,33 @@ class SiteformsMixin(BaseForm):
 
         all_macro = '__all__'
 
-        def store_restore(base_fld: Field, attrs: List[str]):
-            """Since Django's BoundField uses form base field attributes,
-            but not its own (e.g. for disabled in .build_widget_attrs()
-            we are forced to store and restore previous values to not to have side
-            effects on form classes reuse.
+        with temporary_fields_patch(self):
 
-            :param base_fld:
-            :param attrs:
+            for field in self:
+                field: SubformBoundField
+                field_name = field.name
+                base_field = field.field
 
-            """
-            for attr in attrs:
+                made_readonly = False
+                if readonly == all_macro or field_name in readonly:
+                    original_widget = base_field.widget
+                    if not isinstance(original_widget, ReadOnlyWidget):
+                        # We do not set this widget if already set since
+                        # it might be a customized subclass.
+                        widget = ReadOnlyWidget(
+                            bound_field=field,
+                            original_widget=original_widget,
+                        )
+                        base_field.widget = widget
+                    made_readonly = True
 
-                tmp_attr = f'_{attr}'
-                val = getattr(base_fld, tmp_attr, None)
+                # Readonly fields are disables automatically.
+                if made_readonly or (disabled == all_macro or field_name in disabled):
+                    base_field.disabled = True
 
-                if val is not None:
-                    setattr(base_fld, attr, val)
-                    delattr(base_fld, tmp_attr)
+                if field_name in hidden:
+                    base_field.widget = HiddenInput()
 
-                else:
-                    setattr(base_fld, f'_{attr}', getattr(base_fld, attr))
+                result = callback()
 
-        mutated_fields = ['disabled', 'widget']
-
-        for field in self:
-            field: SubformBoundField
-            field_name = field.name
-
-            base_field = field.field
-            store_restore(base_field, mutated_fields)
-
-            made_readonly = False
-            if readonly == all_macro or field_name in readonly:
-                original_widget = base_field.widget
-                if not isinstance(original_widget, ReadOnlyWidget):
-                    # We do not set this widget if already set since
-                    # it might be a customized subclass.
-                    widget = ReadOnlyWidget()
-                    widget.original_widget = original_widget
-                    base_field.widget = widget
-                made_readonly = True
-
-            # Readonly fields are disables automatically.
-            if made_readonly or (disabled == all_macro or field_name in disabled):
-                base_field.disabled = True
-
-            if field_name in hidden:
-                base_field.widget = HiddenInput()
-
-        return mark_safe(self.Composer(self).render())
+        return result
