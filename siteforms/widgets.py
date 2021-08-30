@@ -43,11 +43,16 @@ class ReadOnlyWidget(Widget):
     """
     template_name = ''
 
-    bound_field: 'SubformBoundField' = None
-    """Bound runtime."""
-
-    original_widget: Widget = None
-    """Bound runtime."""
+    def __init__(
+            self,
+            *args,
+            bound_field: 'SubformBoundField' = None,
+            original_widget: Widget = None,
+            **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.bound_field = bound_field
+        self.original_widget = original_widget
 
     def format_value_hook(self, value: Any):
         """Allows format value customization right before it's formatted by base format function."""

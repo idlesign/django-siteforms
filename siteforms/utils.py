@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Optional, Union
 
 from django.forms import Field
@@ -39,3 +40,28 @@ def bind_subform(*, subform: 'TypeSubform', field: Field):
     """
     field.widget.form = subform
     field.form = subform
+
+
+@contextmanager
+def temporary_fields_patch(form):
+    """Too bad. Since Django's BoundField uses form base fields attributes,
+    (but not its own, e.g. for disabled in .build_widget_attrs())
+    we are forced to store and restore previous values to not to have side
+    effects on form classes reuse.
+
+    .. warning:: Possible race condition. Maybe fix that someday?
+
+    :param form:
+
+    """
+    originals = {}
+
+    for name, field in form.base_fields.items():
+        originals[name] = (field.widget, field.disabled)
+
+    try:
+        yield
+
+    finally:
+        for name, field in form.base_fields.items():
+            field.widget, field.disabled = originals[name]

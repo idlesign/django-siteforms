@@ -437,3 +437,36 @@ def test_json_subforms(form_cls, request_get, request_post):
     thing = Thing.objects.get(id=thing.id)
     assert thing.fchar == '{"first": "hi", "second": "1"}'
     assert thing.ftext == 'two'
+
+
+def test_no_basefields_sideeffect(request_get):
+
+    class MyAnotherNestedForm(MyAnotherForm):
+
+        readonly_fields = '__all__'
+
+        subforms = {
+            'fadd': MyAdditionalForm,
+        }
+
+    class MyFormWithSet(MyAnotherThingForm):
+
+        subforms = {
+            'fm2m': MyAnotherNestedForm,
+        }
+
+    add1 = Additional.objects.create(fnum='eee')
+    another1 = Another.objects.create(fsome='888', fadd=add1)
+
+    thing = AnotherThing.objects.create(fchar='one')
+    thing.fm2m.add(another1)
+    thing = AnotherThing.objects.get(id=thing.id)
+
+    form = MyFormWithSet(request=request_get(), src='POST', instance=thing)
+    html = f'{form}'
+    assert 'id="id_fm2m-0-fsome" disabled>888' in html
+
+    form = MyAnotherForm(request=request_get(), src='POST', instance=another1)
+    html = f'{form}'
+    assert '" required id="id_fsome"' in html
+    assert 'disabled' not in html
