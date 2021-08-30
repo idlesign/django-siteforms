@@ -6,6 +6,10 @@ if False:  # pragma: nocover
     from .base import TypeSubform  # noqa
 
 
+UNSET = set()
+"""Value is not set sentinel."""
+
+
 def merge_dict(src: Optional[dict], dst: Union[dict, str]) -> dict:
 
     if src is None:

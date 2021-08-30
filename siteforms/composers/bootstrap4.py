@@ -2,7 +2,9 @@ from typing import Optional, Tuple, Union
 
 from django.forms import FileInput, ClearableFileInput, CheckboxInput, BoundField, Select, SelectMultiple
 
-from .base import FormComposer, TypeAttrs, ALL_FIELDS, FORM, ALL_GROUPS, ALL_ROWS, SUBMIT, FIELDS_STACKED  # noqa
+from .base import (
+    FormComposer, TypeAttrs, ALL_FIELDS, FORM, ALL_GROUPS, ALL_ROWS, SUBMIT, FIELDS_STACKED, FIELDS_READONLY,
+) # noqa
 
 
 class Bootstrap4(FormComposer):
@@ -207,6 +209,7 @@ class Bootstrap4(FormComposer):
         ALL_FIELDS: {'class': 'form-control'},
         ALL_ROWS: {'class': 'form-row mx-0'},
         ALL_GROUPS: {'class': 'form-group'},
+        FIELDS_READONLY: {'class': 'bg-light form-control border border-light'},
         FileInput: _file_cls,
         ClearableFileInput: _file_cls,
         CheckboxInput: {'class': _get_attr_check_input},

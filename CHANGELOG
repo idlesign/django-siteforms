@@ -2,6 +2,13 @@ django-siteforms changelog
 ==========================
 
 
+Unreleased
+----------
++ ReadOnlyWidget. Customizability improved.
++ ReadOnlyWidget. Now can efficiently handle Foreign Keys.
++ ReadOnlyWidget. Now can handle missing choices.
+
+
 v0.5.0 [2021-08-29]
 -------------------
 + Added basic formset support (many-to-many).

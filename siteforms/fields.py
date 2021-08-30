@@ -3,8 +3,8 @@ from typing import Optional
 
 from django.forms import BoundField, Field, ModelChoiceField
 
-from .widgets import SubformWidget
 from .formsets import BaseFormSet
+from .widgets import SubformWidget
 
 if False:  # pragma: nocover
     from .base import TypeSubform  # noqa
@@ -19,6 +19,11 @@ class SubformField(Field):
         super().__init__(*args, **kwargs)
         self.original_field = original_field
         self.form: Optional['TypeSubform'] = None
+
+        # todo Maybe proxy other attributes?
+        self.label = original_field.label
+        self.help_text = original_field.help_text
+        self.to_python = original_field.to_python
 
     def get_bound_field(self, form, field_name):
         return SubformBoundField(form, self, field_name)
@@ -49,13 +54,6 @@ class SubformField(Field):
             value = json.dumps(value)
 
         return original_field.clean(value)
-
-    def prepare_value(self, value):
-        # prepare value for widget rendering
-        return self.original_field.prepare_value(value)
-
-    def to_python(self, value):
-        return self.original_field.to_python(value)
 
 
 class SubformBoundField(BoundField):

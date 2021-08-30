@@ -11,14 +11,13 @@ from django.utils.safestring import mark_safe
 
 from .fields import SubformBoundField
 from .formsets import ModelFormSet, SiteformFormSetMixin
-from .utils import bind_subform
+from .utils import bind_subform, UNSET
 from .widgets import ReadOnlyWidget
 
 if False:  # pragma: nocover
     from .composers.base import FormComposer  # noqa
 
 
-UNSET = set()
 TypeSubform = Union['SiteformsMixin', SiteformFormSetMixin]
 
 
@@ -43,6 +42,7 @@ class SiteformsMixin(BaseForm):
 
     readonly_fields: Union[Set[str], str] = None
     """Fields to make read-only. Use __all__ to disable all fields (affects subforms).
+    Readonly fields are disabled automatically to prevent data corruption.
     
     .. note:: This can also be passed into __init__() as the keyword-argument
         with the same name.
@@ -384,11 +384,20 @@ class SiteformsMixin(BaseForm):
             base_field = field.field
             store_restore(base_field, mutated_fields)
 
-            if disabled == all_macro or field_name in disabled:
-                base_field.disabled = True
-
+            made_readonly = False
             if readonly == all_macro or field_name in readonly:
-                base_field.widget = ReadOnlyWidget()
+                original_widget = base_field.widget
+                if not isinstance(original_widget, ReadOnlyWidget):
+                    # We do not set this widget if already set since
+                    # it might be a customized subclass.
+                    widget = ReadOnlyWidget()
+                    widget.original_widget = original_widget
+                    base_field.widget = widget
+                made_readonly = True
+
+            # Readonly fields are disables automatically.
+            if made_readonly or (disabled == all_macro or field_name in disabled):
+                base_field.disabled = True
 
             if field_name in hidden:
                 base_field.widget = HiddenInput()

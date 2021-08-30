@@ -254,6 +254,7 @@ def test_fk(request_post, request_get):
 
     form = MyFormWithFk(request=request_get(), src='POST')
     html = f'{form}'
+    assert 'Fforeign_name:' in html
     assert 'name="fforeign-fsome" ' in html
 
     # Add a foreign item.

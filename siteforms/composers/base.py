@@ -2,13 +2,14 @@ from collections import defaultdict
 from functools import partial
 from typing import Dict, Any, Optional, Union, List, Type
 
-from django.forms import BoundField, CheckboxInput, Form
+from django.forms import BoundField, CheckboxInput, Form, Field
 from django.forms.utils import flatatt
 from django.forms.widgets import Input
 from django.middleware.csrf import get_token
 from django.utils.translation import gettext_lazy as _
 
 from ..utils import merge_dict
+from ..widgets import ReadOnlyWidget
 
 if False:  # pragma: nocover
     from ..toolbox import SiteformsMixin  # noqa
@@ -30,6 +31,9 @@ FIELDS_STACKED = '__stacked__'
 E.g. in 'group': {'a', ['b', 'c']} b and c are stacked.
 
 """
+
+FIELDS_READONLY = '__readonly__'
+"""Denotes fields considered read only (using ReadOnlyWidget)."""
 
 FORM = '__form__'
 """Denotes a form."""
@@ -217,11 +221,16 @@ class FormComposer:
     def _attrs_get_basic(self, container: Dict[str, Any], field: BoundField):
         get_attrs = partial(self._attrs_get, container, obj=field)
 
-        return {
+        attrs = {
             **get_attrs(ALL_FIELDS),
             **get_attrs(field.field.widget.__class__),
             **get_attrs(field.name),
         }
+
+        if isinstance(field.field.widget, ReadOnlyWidget):
+            attrs.update({**get_attrs(FIELDS_READONLY)})
+
+        return attrs
 
     def _render_field(self, field: BoundField, attrs: TypeAttrs = None) -> str:
 

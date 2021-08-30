@@ -1,6 +1,9 @@
-from typing import Optional, Union
+from typing import Optional, Any
 
-from django.forms import Widget
+from django.forms import Widget, ModelChoiceField
+from django.forms.utils import flatatt
+
+from .utils import UNSET
 
 if False:  # pragma: nocover
     from .fields import SubformBoundField  # noqa
@@ -9,8 +12,6 @@ if False:  # pragma: nocover
 
 class SubformWidget(Widget):
     """Widget representing a subform"""
-
-    template_name = ''  # Satisfy the interface requirement.
 
     form: Optional['TypeSubform'] = None
     """Subform or a formset for which the widget is used. 
@@ -39,22 +40,59 @@ class ReadOnlyWidget(Widget):
     Useful to make cheap entity details pages by a simple reuse of forms from entity edit pages.
 
     """
+    template_name = ''
+
     bound_field: 'SubformBoundField' = None
     """Bound runtime."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    original_widget: Widget = None
+    """Bound runtime."""
 
-    def represent_value(self, value):
-
-        field = self.bound_field.field
-
-        choices = dict(getattr(field, 'choices', {}))
-        if choices:
-            value = choices.get(value)
-
+    def format_value_hook(self, value: Any):
+        """Allows format value customization right before it's formatted by base format function."""
         return value
 
-    def render(self, name, value, attrs=None, renderer=None):
-        value = self.represent_value(value)
-        return f"{'' if value is None else value}"
+    def format_value(self, value):
+
+        bound_field = self.bound_field
+        field = bound_field.field
+        use_original_value_format = True
+
+        if isinstance(field, ModelChoiceField):
+            # Do not try to pick all choices for FK.
+            value = getattr(bound_field.form.instance, bound_field.name, None)
+            use_original_value_format = False
+
+        else:
+            choices = getattr(field, 'choices', UNSET)
+            if choices is not UNSET:
+                # Try ro represent a choice value.
+                use_original_value_format = False
+                if value is not None:
+                    # Do not try to get title for None.
+                    value = dict(choices or {}).get(value, f'&lt;uknown ({value})&gt;')
+
+        if use_original_value_format:
+            original_widget = self.original_widget
+            if original_widget:
+                value = original_widget.format_value(value)
+
+        value = self.format_value_hook(value)
+
+        return super().format_value(value) or ''
+
+    def _render(self, template_name, context, renderer=None):
+        widget_data = context['widget']
+
+        if template_name:
+            # Support template rendering for subclasses.
+            value = super()._render(template_name, context, renderer)
+
+        else:
+            value = widget_data['value']
+
+        return self.wrap_value(value=value, attrs=widget_data['attrs'])
+
+    @classmethod
+    def wrap_value(cls, *, value: Any, attrs: dict):
+        return f"<div {flatatt(attrs)}>{value}</div>"

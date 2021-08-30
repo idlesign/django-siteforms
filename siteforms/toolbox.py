@@ -3,6 +3,7 @@ from django.forms import fields  # noqa exposed for convenience
 
 from .base import SiteformsMixin as _Mixin
 from .metas import BaseMeta as _BaseMeta, ModelBaseMeta as _ModelBaseMeta
+from .widgets import ReadOnlyWidget  # noqa
 
 
 class Form(_Mixin, _Form, metaclass=_BaseMeta):

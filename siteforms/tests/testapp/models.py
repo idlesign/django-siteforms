@@ -8,6 +8,9 @@ class Another(models.Model):
         'Additional', verbose_name='fadd_name', help_text='fadd_help', null=True, blank=True,
         on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.fsome
+
 
 class Additional(models.Model):
 

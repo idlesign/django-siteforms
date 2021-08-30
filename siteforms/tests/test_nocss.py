@@ -88,7 +88,7 @@ def test_nocss_disabled(nocss_form_html):
 def test_nocss_readonly(nocss_form_html):
     thing = Thing(fchoices='two')
     html = nocss_form_html(readonly_fields={'fchoices'}, instance=thing)
-    assert 'Fchoices_name:</label>2<small' in html
+    assert 'id="id_fchoices" disabled required>2</div><small' in html
 
 
 def test_nocss_groups(nocss_form_html, layout):

@@ -40,6 +40,7 @@ def form():
             model=None,
             options: dict = None,
             fields: Union[List[str], str] = None,
+            model_meta: dict = None,
             **kwargs
     ) -> Union[Type[Form], Type[ModelForm]]:
 
@@ -54,7 +55,12 @@ def form():
         form_cls = Form
 
         if model:
-            form_attrs['Meta'] = type('Meta', (object,), dict(model=model, fields=fields or '__all__'))
+            model_meta = {
+                'model': model,
+                'fields': fields or '__all__',
+                **(model_meta or {}),
+            }
+            form_attrs['Meta'] = type('Meta', (object,), model_meta)
             form_cls = ModelForm
 
         return type('DynForm', (form_cls,), form_attrs)
