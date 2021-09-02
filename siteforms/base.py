@@ -390,6 +390,6 @@ class SiteformsMixin(BaseForm):
                 if field_name in hidden:
                     base_field.widget = HiddenInput()
 
-                result = callback()
+            result = callback()
 
         return result
