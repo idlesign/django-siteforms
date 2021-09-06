@@ -179,9 +179,9 @@ def test_formset_m2m_nested(request_post, request_get, db_queries):
             'fm2m': MyAnotherNestedForm,
         }
 
-    form = MyFormWithSet(request=request_get(), src='POST')
-    html = f'{form}'
-    assert 'name="fm2m-0-fadd-fnum" maxlength="5" ' in html
+    # form = MyFormWithSet(request=request_get(), src='POST')
+    # html = f'{form}'
+    # assert 'name="fm2m-0-fadd-fnum" maxlength="5" ' in html
 
     add1 = Additional.objects.create(fnum='eee')
     add2 = Additional.objects.create(fnum='www')
@@ -195,11 +195,15 @@ def test_formset_m2m_nested(request_post, request_get, db_queries):
     thing = AnotherThing.objects.get(id=thing.id)
 
     # Check subform is rendered with instance data.
-    form = MyFormWithSet(request=request_get(), src='POST', instance=thing)
-    html = f'{form}'
-    assert 'name="fm2m-TOTAL_FORMS"' in html
-    assert 'name="fm2m-0-fsome" value="888" ' in html
-    assert 'name="fm2m-0-fadd-fnum" value="eee" ' in html
+    # form = MyFormWithSet(request=request_get(), src='POST', instance=thing)
+    # html = f'{form}'
+    # assert 'name="fm2m-TOTAL_FORMS"' in html
+    # assert 'name="fm2m-0-fsome" value="888" ' in html
+    # assert 'name="fm2m-0-fadd-fnum" value="eee" ' in html
+
+    assert AnotherThing.objects.count() == 1
+    assert Another.objects.count() == 2
+    assert Additional.objects.count() == 2
 
     # Check data save.
     form = MyFormWithSet(request=request_post(data={
@@ -214,8 +218,8 @@ def test_formset_m2m_nested(request_post, request_get, db_queries):
         'fm2m-1-fsome': '999-y',
         'fm2m-1-fadd-fnum': 'www-y',
         'fm2m-1-id': '2',
-        'fm2m-2-fsome': '',
-        'fm2m-2-fadd-fnum': '',
+        'fm2m-2-fsome': '666',
+        'fm2m-2-fadd-fnum': 'iii-y',
         'fm2m-2-id': '',
         '__submit': 'siteform',
     }), src='POST', instance=thing)
@@ -223,6 +227,15 @@ def test_formset_m2m_nested(request_post, request_get, db_queries):
     is_valid = form.is_valid()
     assert is_valid
     form.save()
+
+    # check items are edited and added to DB and m2m
+    assert AnotherThing.objects.count() == 1
+    assert Another.objects.count() == 3
+    assert Additional.objects.count() == 3
+
+    fm2m_items = list(thing.fm2m.all().order_by('id'))
+    assert fm2m_items[-1].fsome == '666'
+    assert fm2m_items[-1].fadd.fnum == 'iii-y'
 
     thing = AnotherThing.objects.get(id=thing.id)
     assert thing.fchar == 'two'
@@ -345,6 +358,34 @@ def test_fk_nested(request_post, request_get):
     assert foreign.fsome == 'rru'
     assert thing.fchar == 'two'
     assert additional.fnum == '555'
+
+    # check a new foreign
+    thing.fforeign = None
+    thing.save()
+
+    assert Thing.objects.count() == 1
+    assert Another.objects.count() == 1
+    assert Additional.objects.count() == 1
+
+    form = MyFormWithFkNested(request=request_post(data={
+        'fchar': 'three',
+        'fforeign-fsome': 'new',
+        'fforeign-fadd-fnum': '777',
+        '__submit': 'siteform',
+    }), src='POST', instance=thing)
+
+    is_valid = form.is_valid()
+    assert is_valid
+    assert form.instance.id
+    assert form.instance.fchar == 'three'
+    assert form.instance.fforeign.id
+    assert form.instance.fforeign.fsome == 'new'
+    assert form.instance.fforeign.fadd.id
+    assert form.instance.fforeign.fadd.fnum == '777'
+
+    assert Thing.objects.count() == 1
+    assert Another.objects.count() == 2
+    assert Additional.objects.count() == 2
 
 
 @pytest.fixture
