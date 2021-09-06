@@ -2,8 +2,8 @@ django-siteforms changelog
 ==========================
 
 
-Unreleased
-----------
+v0.6.0 [2021-09-06]
+-------------------
 + Now nested form items (FK, M2M) can be initialized automatically.
 + ReadOnlyWidget. Customizability improved.
 + ReadOnlyWidget. Now can efficiently handle Foreign Keys.
