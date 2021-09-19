@@ -480,21 +480,23 @@ def test_json_subforms(form_cls, request_get, request_post):
     assert thing.ftext == 'two'
 
 
+class MyAnotherNestedForm(MyAnotherForm):
+
+    readonly_fields = '__all__'
+
+    subforms = {
+        'fadd': MyAdditionalForm,
+    }
+
+
+class MyFormWithSet(MyAnotherThingForm):
+
+    subforms = {
+        'fm2m': MyAnotherNestedForm,
+    }
+
+
 def test_no_basefields_sideeffect(request_get):
-
-    class MyAnotherNestedForm(MyAnotherForm):
-
-        readonly_fields = '__all__'
-
-        subforms = {
-            'fadd': MyAdditionalForm,
-        }
-
-    class MyFormWithSet(MyAnotherThingForm):
-
-        subforms = {
-            'fm2m': MyAnotherNestedForm,
-        }
 
     add1 = Additional.objects.create(fnum='eee')
     another1 = Another.objects.create(fsome='888', fadd=add1)
@@ -511,6 +513,24 @@ def test_no_basefields_sideeffect(request_get):
     html = f'{form}'
     assert '" required id="id_fsome"' in html
     assert 'disabled' not in html
+
+
+def test_cheap_details_view(request_get):
+
+    add1 = Additional.objects.create(fnum='eee')
+    another1 = Another.objects.create(fsome='888', fadd=add1)
+    another2 = Another.objects.create(fsome='999', fadd=add1)
+
+    thing = AnotherThing.objects.create(fchar='one')
+    thing.fm2m.add(another1, another2)
+
+    form = MyFormWithSet(
+        request=request_get(), src='POST', instance=thing,
+        readonly_fields='__all__', render_form_tag=False)
+
+    html = f'{form}'
+    assert 'disabled>999</div>' in html
+    assert '<form ' not in html
 
 
 def test_render_form_tag(form_cls, request_get):

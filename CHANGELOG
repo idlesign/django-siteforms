@@ -6,6 +6,7 @@ Unreleased
 ----------
 ! 'Composer.opt_render_form' was renamed into '.opt_render_form_tag'.
 + Added 'render_form_tag' form argument.
+* Fixed subforms rendering when 'readonly_fields' form argument is used.
 
 
 v0.6.0 [2021-09-06]

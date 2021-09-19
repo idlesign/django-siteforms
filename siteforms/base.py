@@ -8,7 +8,7 @@ from django.forms import (
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
-from .fields import SubformBoundField
+from .fields import SubformBoundField, SubformField
 from .formsets import ModelFormSet, SiteformFormSetMixin
 from .utils import bind_subform, UNSET, temporary_fields_patch
 from .widgets import ReadOnlyWidget
@@ -405,9 +405,16 @@ class SiteformsMixin(BaseForm):
                 made_readonly = False
                 if readonly == all_macro or field_name in readonly:
                     original_widget = base_field.widget
-                    if not isinstance(original_widget, ReadOnlyWidget):
-                        # We do not set this widget if already set since
+
+                    make_read_only = (
+                        # We do not set this widget if already set, since
                         # it might be a customized subclass.
+                        not isinstance(original_widget, ReadOnlyWidget)
+                        # And we do not set the widget for subforms, since
+                        # they handle readonly by themselves.
+                        and not isinstance(base_field, SubformField)
+                    )
+                    if make_read_only:
                         widget = ReadOnlyWidget(
                             bound_field=field,
                             original_widget=original_widget,
