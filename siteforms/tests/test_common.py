@@ -511,3 +511,15 @@ def test_no_basefields_sideeffect(request_get):
     html = f'{form}'
     assert '" required id="id_fsome"' in html
     assert 'disabled' not in html
+
+
+def test_render_form_tag(form_cls, request_get):
+
+    def spawn(**kwargs):
+        return form_cls(model=Thing, use_fields=['fchar', 'ftext'])(**kwargs)
+
+    form = spawn()
+    assert '<form ' in f'{form}'
+
+    form = spawn(render_form_tag=False)
+    assert '<form ' not in f'{form}'

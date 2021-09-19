@@ -2,6 +2,12 @@ django-siteforms changelog
 ==========================
 
 
+Unreleased
+----------
+! 'Composer.opt_render_form' was renamed into '.opt_render_form_tag'.
++ Added 'render_form_tag' form argument.
+
+
 v0.6.0 [2021-09-06]
 -------------------
 + Now nested form items (FK, M2M) can be initialized automatically.

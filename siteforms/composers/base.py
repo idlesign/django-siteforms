@@ -1,6 +1,6 @@
 from collections import defaultdict
 from functools import partial
-from typing import Dict, Any, Optional, Union, List, Type
+from typing import Dict, Any, Optional, Union, List, Type, TypeVar
 
 from django.forms import BoundField, CheckboxInput, Form
 from django.forms.utils import flatatt
@@ -8,7 +8,7 @@ from django.forms.widgets import Input
 from django.middleware.csrf import get_token
 from django.utils.translation import gettext_lazy as _
 
-from ..utils import merge_dict
+from ..utils import merge_dict, UNSET
 from ..widgets import ReadOnlyWidget
 
 if False:  # pragma: nocover
@@ -43,6 +43,8 @@ SUBMIT = '__submit__'
 
 _VALUE = '__value__'
 
+TypeComposer = TypeVar('TypeComposer', bound='FormComposer')
+
 
 class FormatDict(dict):
 
@@ -53,7 +55,7 @@ class FormatDict(dict):
 class FormComposer:
     """Base form composer."""
     
-    opt_render_form: bool = True
+    opt_render_form_tag: bool = True
     """Render form tag."""
 
     opt_label_colon: bool = True
@@ -508,17 +510,22 @@ class FormComposer:
         return self._format_value(
             get_attr(self.wrappers, SUBMIT),
             submit=(
-                f'<button type="submit" name="{self.opt_submit_name}" value="{self.form._submit_value}"'
+                f'<button type="submit" name="{self.opt_submit_name}" value="{self.form.submit_marker}"'
                 f'{flatatt(get_attr(self.attrs, SUBMIT))}>{self.opt_submit}</button>'
             )
         )
 
-    def render(self) -> str:
-        """Renders form to string."""
+    def render(self, *, render_form_tag: bool = UNSET) -> str:
+        """Renders form to string.
 
+        :param render_form_tag: Can be used to override `opt_render_form_tag` class setting.
+
+        """
         html = self._render_layout()
 
-        if self.opt_render_form:
+        render_form_tag = self.opt_render_form_tag if render_form_tag is UNSET else render_form_tag
+
+        if render_form_tag:
             get_attr = partial(self._attrs_get, self.attrs)
             form = self.form
 

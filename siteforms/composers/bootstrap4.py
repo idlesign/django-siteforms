@@ -5,6 +5,7 @@ from django.forms import FileInput, ClearableFileInput, CheckboxInput, BoundFiel
 from .base import (
     FormComposer, TypeAttrs, ALL_FIELDS, FORM, ALL_GROUPS, ALL_ROWS, SUBMIT, FIELDS_STACKED, FIELDS_READONLY,
 ) # noqa
+from ..utils import UNSET
 
 
 class Bootstrap4(FormComposer):
@@ -178,7 +179,7 @@ class Bootstrap4(FormComposer):
 
         return super()._render_field(field, attrs)
 
-    def render(self) -> str:
+    def render(self, *, render_form_tag: bool = UNSET) -> str:
         out = super().render()
 
         size = self.opt_size

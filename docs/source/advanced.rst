@@ -42,7 +42,7 @@ Options
 
 * ``opt_form_inline`` - Make form inline.
 
-* ``opt_render_form`` - Render form tag. On by default.
+* ``opt_render_form_tag`` - Render form tag. On by default.
 
 * ``opt_label_colon`` - Whether to render colons after label's texts.
 

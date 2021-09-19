@@ -1,5 +1,5 @@
 import json
-from typing import Type, Set, Dict, Union, Generator, Callable
+from typing import Type, Set, Dict, Union, Generator, Callable, Any
 
 from django.forms import (
     BaseForm,
@@ -14,16 +14,18 @@ from .utils import bind_subform, UNSET, temporary_fields_patch
 from .widgets import ReadOnlyWidget
 
 if False:  # pragma: nocover
-    from .composers.base import FormComposer  # noqa
+    from .composers.base import FormComposer, TypeComposer  # noqa
 
 
 TypeSubform = Union['SiteformsMixin', SiteformFormSetMixin]
+TypeDefFieldsAll = Union[Set[str], str]
+TypeDefSubforms = Dict[str, Type['SiteformsMixin']]
 
 
 class SiteformsMixin(BaseForm):
     """Mixin to extend native Django form tools."""
 
-    disabled_fields: Union[Set[str], str] = None
+    disabled_fields: TypeDefFieldsAll = None
     """Fields to be disabled. Use __all__ to disable all fields (affects subforms).
     
     .. note:: This can also be passed into __init__() as the keyword-argument
@@ -39,7 +41,7 @@ class SiteformsMixin(BaseForm):
     
     """
 
-    readonly_fields: Union[Set[str], str] = None
+    readonly_fields: TypeDefFieldsAll = None
     """Fields to make read-only. Use __all__ to disable all fields (affects subforms).
     Readonly fields are disabled automatically to prevent data corruption.
     
@@ -48,7 +50,7 @@ class SiteformsMixin(BaseForm):
     
     """
 
-    subforms: Dict[str, Type['SiteformsMixin']] = None
+    subforms: TypeDefSubforms = None
     """Allows sub forms registration. Expects field name to subform class mapping."""
 
     formset_kwargs: dict = None
@@ -77,6 +79,11 @@ class SiteformsMixin(BaseForm):
             src: str = None,
             id: str = '',  # noqa
             parent: 'SiteformsMixin' = None,
+            hidden_fields: Set[str] = UNSET,
+            formset_kwargs: dict = UNSET,
+            subforms: TypeDefSubforms = UNSET,
+            submit_marker: Any = UNSET,
+            render_form_tag: bool = UNSET,
             **kwargs
     ):
         """
@@ -92,7 +99,21 @@ class SiteformsMixin(BaseForm):
 
         :param parent: Parent form for a subform.
 
-        :param kwargs:
+        :param hidden_fields: See the class attribute docstring.
+
+        :param formset_kwargs: See the class attribute docstring.
+
+        :param subforms: See the class attribute docstring.
+
+        :param submit_marker: A value that should be used to detect
+            whether the form was submitted.
+
+        :param render_form_tag: Can be used to override `Composer.opt_render_form_tag` setting.
+            Useful in conjunction with `readonly_fields='__all__` to make read-only details pages
+            using form layout.
+
+        :param kwargs: Form arguments to pass to the base
+            class of this form and also to subforms.
 
         """
         self.src = src
@@ -104,11 +125,10 @@ class SiteformsMixin(BaseForm):
         readonly = kwargs.get('readonly_fields', self.readonly_fields)
         self.readonly_fields = readonly if isinstance(readonly, str) else set(readonly or [])
 
-        self.hidden_fields = set(kwargs.pop('hidden_fields', self.hidden_fields) or [])
-
-        self.formset_kwargs = kwargs.pop('formset_kwargs', self.formset_kwargs) or {}
-
-        self.subforms = kwargs.pop('subforms', self.subforms) or {}
+        self.hidden_fields = set((self.hidden_fields if hidden_fields is UNSET else hidden_fields) or [])
+        self.formset_kwargs = (self.formset_kwargs if formset_kwargs is UNSET else formset_kwargs) or {}
+        self.subforms = (self.subforms if subforms is UNSET else subforms) or {}
+        self.composer_render_form_tag = render_form_tag
 
         self.id = id
 
@@ -120,7 +140,10 @@ class SiteformsMixin(BaseForm):
         self.parent = parent
 
         # Allow subform using the same submit value as the base form.
-        self._submit_value = kwargs.pop('submit_value', kwargs.get('prefix', self.prefix) or 'siteform')
+        self.submit_marker = (
+            (kwargs.get('prefix', self.prefix) or 'siteform')
+            if submit_marker is UNSET
+            else submit_marker)
 
         args = list(args)
         self._initialize_pre(args=args, kwargs=kwargs)
@@ -146,7 +169,7 @@ class SiteformsMixin(BaseForm):
         # Handle user supplied data.
         if src and request:
             data = getattr(request, src)
-            is_submitted = data.get(self.Composer.opt_submit_name, '') == self._submit_value
+            is_submitted = data.get(self.Composer.opt_submit_name, '') == self.submit_marker
 
             self.is_submitted = is_submitted
 
@@ -170,7 +193,7 @@ class SiteformsMixin(BaseForm):
             subforms_kwargs.update({
                 'src': self.src,
                 'request': self.request,
-                'submit_value': self._submit_value,
+                'submit_marker': self.submit_marker,
                 'parent': self,
             })
             self._subforms_kwargs = subforms_kwargs
@@ -219,7 +242,7 @@ class SiteformsMixin(BaseForm):
             if getattr(subform_cls, 'Composer', None) is None:
                 setattr(subform_cls, 'Composer', type('DynamicComposer', self.Composer.__bases__, {}))
 
-            subform_cls.Composer.opt_render_form = False
+            subform_cls.Composer.opt_render_form_tag = False
 
             kwargs_form = self._subforms_kwargs.copy()
 
@@ -349,10 +372,19 @@ class SiteformsMixin(BaseForm):
 
         return self._apply_attrs(callback=is_valid_)
 
+    def get_composer(self) -> 'TypeComposer':
+        """Spawns a form composer object.
+        Hook method. May be reimplemented by a subclass
+        for a further composer modification.
+        """
+        return self.Composer(self)
+
     def render(self) -> str:
         """Renders this form as a string."""
         def render_():
-            return mark_safe(self.Composer(self).render())
+            return mark_safe(self.get_composer().render(
+                render_form_tag=self.composer_render_form_tag,
+            ))
         return self._apply_attrs(callback=render_)
 
     def _apply_attrs(self, callback: Callable):
