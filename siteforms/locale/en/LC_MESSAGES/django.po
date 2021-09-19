@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-30 18:47+0700\n"
+"POT-Creation-Date: 2021-09-19 09:40+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: composers/base.py:89
+#: composers/base.py:91
 msgid "Submit"
 msgstr ""
 
-#: composers/base.py:304
+#: composers/base.py:306
 #, python-format
 msgid "Hidden field \"%(name)s\": %(error)s"
 msgstr ""
@@ -31,6 +31,14 @@ msgstr ""
 msgid "Siteforms"
 msgstr ""
 
-#: widgets.py:74
+#: widgets.py:67
 msgid "unknown"
+msgstr ""
+
+#: widgets.py:78
+msgid "Yes"
+msgstr ""
+
+#: widgets.py:78
+msgid "No"
 msgstr ""

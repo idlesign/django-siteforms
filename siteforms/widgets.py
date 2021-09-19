@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from django.forms import Widget, ModelChoiceField
+from django.forms import Widget, ModelChoiceField, BooleanField
 from django.forms.utils import flatatt
 from django.utils.translation import gettext_lazy as _
 
@@ -64,10 +64,18 @@ class ReadOnlyWidget(Widget):
         field = bound_field.field
         use_original_value_format = True
 
+        unknown = _('unknown')
+
         if isinstance(field, ModelChoiceField):
             # Do not try to pick all choices for FK.
             value = getattr(bound_field.form.instance, bound_field.name, None)
             use_original_value_format = False
+
+        elif isinstance(field, BooleanField):
+            if value is None:
+                value = f'&lt;{unknown}&gt;'
+            else:
+                value = _('Yes') if value else _('No')
 
         else:
             choices = getattr(field, 'choices', UNSET)
@@ -76,7 +84,6 @@ class ReadOnlyWidget(Widget):
                 use_original_value_format = False
                 if value is not None:
                     # Do not try to get title for None.
-                    unknown = _('unknown')
                     value = dict(choices or {}).get(value, f'&lt;{unknown} ({value})&gt;')
 
         if use_original_value_format:

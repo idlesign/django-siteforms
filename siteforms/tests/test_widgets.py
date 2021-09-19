@@ -10,8 +10,8 @@ def test_basic(form):
 
     form_cls = form(
         model=Thing,
-        readonly_fields={'fchar', 'fforeign', 'fchoices'},
-        fields=['fchar', 'ftext', 'fforeign', 'fchoices'],
+        readonly_fields={'fchar', 'fforeign', 'fchoices', 'fbool'},
+        fields=['fchar', 'ftext', 'fforeign', 'fchoices', 'fbool'],
         model_meta={
             'widgets': {
                 'ftext': MyWidget,
@@ -19,7 +19,7 @@ def test_basic(form):
         },
     )
     foreign = Another.objects.create(fsome='that')
-    thing = Thing.objects.create(fchar='one', ftext='duo', fforeign=foreign, fchoices='q')
+    thing = Thing.objects.create(fchar='one', ftext='duo', fforeign=foreign, fchoices='q', fbool=False)
     form = form_cls(instance=thing)
 
     html = f'{form}'
@@ -27,3 +27,4 @@ def test_basic(form):
     assert 'that</div>' in html  # FK
     assert '&lt;unknown (q)&gt;</div>' in html  # Unknown in choices
     assert 'mywidgetdata' in html  # data from template
+    assert 'id="id_fbool" disabled>No</div>' in html  # readonly bool
