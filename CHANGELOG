@@ -2,8 +2,8 @@ django-siteforms changelog
 ==========================
 
 
-Unreleased
-----------
+v0.7.0 [2021-09-19]
+-------------------
 ! 'Composer.opt_render_form' was renamed into '.opt_render_form_tag'.
 + 'ReadOnlyWidget' now can deal with 'BooleanField'.
 + Added 'render_form_tag' form argument.
