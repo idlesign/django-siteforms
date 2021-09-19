@@ -179,9 +179,9 @@ def test_formset_m2m_nested(request_post, request_get, db_queries):
             'fm2m': MyAnotherNestedForm,
         }
 
-    # form = MyFormWithSet(request=request_get(), src='POST')
-    # html = f'{form}'
-    # assert 'name="fm2m-0-fadd-fnum" maxlength="5" ' in html
+    form = MyFormWithSet(request=request_get(), src='POST')
+    html = f'{form}'
+    assert 'name="fm2m-0-fadd-fnum" maxlength="5" ' in html
 
     add1 = Additional.objects.create(fnum='eee')
     add2 = Additional.objects.create(fnum='www')
@@ -195,11 +195,11 @@ def test_formset_m2m_nested(request_post, request_get, db_queries):
     thing = AnotherThing.objects.get(id=thing.id)
 
     # Check subform is rendered with instance data.
-    # form = MyFormWithSet(request=request_get(), src='POST', instance=thing)
-    # html = f'{form}'
-    # assert 'name="fm2m-TOTAL_FORMS"' in html
-    # assert 'name="fm2m-0-fsome" value="888" ' in html
-    # assert 'name="fm2m-0-fadd-fnum" value="eee" ' in html
+    form = MyFormWithSet(request=request_get(), src='POST', instance=thing)
+    html = f'{form}'
+    assert 'name="fm2m-TOTAL_FORMS"' in html
+    assert 'name="fm2m-0-fsome" value="888" ' in html
+    assert 'name="fm2m-0-fadd-fnum" value="eee" ' in html
 
     assert AnotherThing.objects.count() == 1
     assert Another.objects.count() == 2
