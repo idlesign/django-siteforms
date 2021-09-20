@@ -180,7 +180,7 @@ class Bootstrap4(FormComposer):
         return super()._render_field(field, attrs)
 
     def render(self, *, render_form_tag: bool = UNSET) -> str:
-        out = super().render()
+        out = super().render(render_form_tag=render_form_tag)
 
         size = self.opt_size
 

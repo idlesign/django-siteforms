@@ -2,6 +2,11 @@ django-siteforms changelog
 ==========================
 
 
+Unreleased
+----------
+* Fix 'render_form_tag' handling for Bootstrap 4.
+
+
 v0.7.0 [2021-09-19]
 -------------------
 ! 'Composer.opt_render_form' was renamed into '.opt_render_form_tag'.
