@@ -417,6 +417,7 @@ class SiteformsMixin(BaseForm):
                 field: SubformBoundField
                 field_name = field.name
                 base_field = field.field
+                instance_field = self.fields[field_name]
 
                 made_readonly = False
                 if readonly == all_macro or field_name in readonly:
@@ -435,15 +436,15 @@ class SiteformsMixin(BaseForm):
                             bound_field=field,
                             original_widget=original_widget,
                         )
-                        base_field.widget = widget
+                        base_field.widget = instance_field.disabled = widget
                     made_readonly = True
 
-                # Readonly fields are disables automatically.
+                # Readonly fields are disabled automatically.
                 if made_readonly or (disabled == all_macro or field_name in disabled):
-                    base_field.disabled = True
+                    base_field.disabled = instance_field.disabled = True
 
                 if field_name in hidden:
-                    base_field.widget = HiddenInput()
+                    base_field.widget = instance_field.widget = HiddenInput()
 
             result = callback()
 
