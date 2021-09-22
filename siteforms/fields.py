@@ -37,7 +37,7 @@ class SubformField(Field):
             if isinstance(form, BaseFormSet):
                 value_ = []
 
-                for item in value:
+                for item in value or []:
                     item_id = item.get('id')
 
                     if item_id is None:
