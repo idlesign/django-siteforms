@@ -1,6 +1,7 @@
-from typing import Optional, Any
+from typing import Optional, Any, List
 
-from django.forms import Widget, ModelChoiceField, BooleanField
+from django.db.models import Manager, Model
+from django.forms import Widget, ModelChoiceField, BooleanField, ModelMultipleChoiceField
 from django.forms.utils import flatatt
 from django.utils.translation import gettext_lazy as _
 
@@ -54,6 +55,17 @@ class ReadOnlyWidget(Widget):
         self.bound_field = bound_field
         self.original_widget = original_widget
 
+    def get_multiple_items(self, value: Optional[Manager]) -> List[Model]:
+        """Allows customization of results for ModelMultipleChoiceField
+        (e.g. .select_related).
+
+        :param value:
+
+        """
+        if value is None:
+            return []
+        return list(value.all())
+
     def format_value_hook(self, value: Any):
         """Allows format value customization right before it's formatted by base format function."""
         return value
@@ -66,7 +78,16 @@ class ReadOnlyWidget(Widget):
 
         unknown = _('unknown')
 
-        if isinstance(field, ModelChoiceField):
+        if isinstance(field, ModelMultipleChoiceField):
+            try:
+                value = getattr(bound_field.form.instance, bound_field.name, None)
+            except ValueError:  # generated due to m2m access from model without an id
+                value = None
+
+            value = self.get_multiple_items(value)
+            use_original_value_format = False
+
+        elif isinstance(field, ModelChoiceField):
             # Do not try to pick all choices for FK.
             value = getattr(bound_field.form.instance, bound_field.name, None)
             use_original_value_format = False
