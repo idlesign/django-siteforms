@@ -153,10 +153,6 @@ class SiteformsMixin(BaseForm):
 
         super().__init__(*args, **kwargs)
 
-        # Attach files automatically.
-        if self.is_submitted and self.is_multipart():
-            self.files = self.request.FILES
-
     def __str__(self):
         return self.render()
 
@@ -176,14 +172,20 @@ class SiteformsMixin(BaseForm):
             if is_submitted and request.method == src:
 
                 self.data = data
-                self.files = request.FILES
+                files = request.FILES
+                self.files = files
 
                 if args:
                     # Prevent arguments clash.
                     args[0] = data
+                    if len(args) > 1:
+                        args[1] = files
 
                 else:
-                    kwargs['data'] = data
+                    kwargs.update({
+                        'data': data,
+                        'files': files,
+                    })
 
         if self.subforms:
             # Prepare form arguments.
@@ -386,6 +388,20 @@ class SiteformsMixin(BaseForm):
                 render_form_tag=self.composer_render_form_tag,
             ))
         return self._apply_attrs(callback=render_)
+
+    def is_multipart(self):
+
+        is_multipart = super().is_multipart()
+
+        if is_multipart:
+            return True
+
+        for subform in self._iter_subforms():
+            is_multipart = subform.is_multipart()
+            if is_multipart:
+                break
+
+        return is_multipart
 
     def _apply_attrs(self, callback: Callable):
 
