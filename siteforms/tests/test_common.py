@@ -2,7 +2,7 @@ import pytest
 from django.forms import fields
 
 from siteforms.composers.base import FormComposer
-from siteforms.tests.testapp.models import Thing, Another, Additional, AnotherThing
+from siteforms.tests.testapp.models import Thing, Another, Additional, AnotherThing, Link
 from siteforms.toolbox import ModelForm, Form
 
 
@@ -41,6 +41,21 @@ class MyForm(ModelForm):
 
     class Composer(Composer):
         pass
+
+
+class LinkForm(ModelForm):
+
+    subforms = {
+        'fthing': MyForm,
+    }
+
+    class Meta:
+        model = Link
+        fields = '__all__'
+
+    class Composer(Composer):
+        opt_render_help = False
+        opt_render_labels = False
 
 
 class MyAnotherThingForm(ModelForm):
@@ -531,6 +546,16 @@ def test_cheap_details_view(request_get):
     html = f'{form}'
     assert 'disabled>999</div>' in html
     assert '<form ' not in html
+
+    nested_form = form.get_subform(name='fm2m').forms[0]
+    assert not nested_form.base_fields['fadd'].disabled
+    assert nested_form.fields['fadd'].disabled
+
+
+def test_multipart(request_get):
+
+    form = LinkForm()
+    assert form.is_multipart()  # has nested form with FileField
 
 
 def test_render_form_tag(form_cls, request_get):
