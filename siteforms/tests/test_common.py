@@ -318,25 +318,27 @@ def test_fk(request_post, request_get):
     assert thing.fchar == 'two'
 
 
+class MyAnotherNestedForm(MyAnotherForm):
+
+    subforms = {
+        'fadd': MyAdditionalForm,
+    }
+
+
+class MyFormWithFkNested(MyForm):
+
+    subforms = {
+        'fforeign': MyAnotherNestedForm,
+    }
+
+    class Composer(MyForm.Composer):
+        opt_render_help = False
+
+    class Meta(MyForm.Meta):
+        fields = ['fchar', 'fforeign']
+
+
 def test_fk_nested(request_post, request_get):
-
-    class MyAnotherNestedForm(MyAnotherForm):
-
-        subforms = {
-            'fadd': MyAdditionalForm,
-        }
-
-    class MyFormWithFkNested(MyForm):
-
-        subforms = {
-            'fforeign': MyAnotherNestedForm,
-        }
-
-        class Composer(MyForm.Composer):
-            opt_render_help = False
-
-        class Meta(MyForm.Meta):
-            fields = ['fchar', 'fforeign']
 
     form = MyFormWithFkNested(request=request_get(), src='POST')
     html = f'{form}'
