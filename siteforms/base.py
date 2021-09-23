@@ -337,20 +337,15 @@ class SiteformsMixin(BaseForm):
 
     def is_valid(self):
 
-        super_ = super()
+        valid = True
 
-        def is_valid_():
-            valid = True
+        for subform in self._iter_subforms():
+            subform_valid = subform.is_valid()
+            valid &= subform_valid
 
-            for subform in self._iter_subforms():
-                subform_valid = subform.is_valid()
-                valid &= subform_valid
+        valid &= super().is_valid()
 
-            valid &= super_.is_valid()
-
-            return valid
-
-        return self._apply_attrs(callback=is_valid_)
+        return valid
 
     def get_composer(self) -> 'TypeComposer':
         """Spawns a form composer object.
@@ -380,6 +375,10 @@ class SiteformsMixin(BaseForm):
                 break
 
         return is_multipart
+
+    def _clean_fields(self):
+        # this ensures valid attributes on validation including that in formsets
+        self._apply_attrs(callback=super()._clean_fields)
 
     def _apply_attrs(self, callback: Callable):
 
