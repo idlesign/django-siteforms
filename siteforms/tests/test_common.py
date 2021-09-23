@@ -7,7 +7,9 @@ from siteforms.toolbox import ModelForm, Form
 
 
 class Composer(FormComposer):
-    """"""
+
+    opt_render_help = False
+    opt_render_labels = False
 
 
 class MyAnotherForm(ModelForm):
@@ -17,9 +19,7 @@ class MyAnotherForm(ModelForm):
         fields = '__all__'
 
     class Composer(Composer):
-
-        opt_render_help = False
-        opt_render_labels = False
+        pass
 
 
 class MyAdditionalForm(ModelForm):
@@ -29,8 +29,7 @@ class MyAdditionalForm(ModelForm):
         fields = '__all__'
 
     class Composer(Composer):
-        opt_render_help = False
-        opt_render_labels = False
+        pass
 
 
 class MyForm(ModelForm):
@@ -54,8 +53,7 @@ class LinkForm(ModelForm):
         fields = '__all__'
 
     class Composer(Composer):
-        opt_render_help = False
-        opt_render_labels = False
+        pass
 
 
 class MyAnotherThingForm(ModelForm):
@@ -65,7 +63,7 @@ class MyAnotherThingForm(ModelForm):
         fields = '__all__'
 
     class Composer(Composer):
-        opt_render_help = False
+        pass
 
 
 def test_id(form_html):
@@ -182,12 +180,6 @@ def test_formset_m2m(request_post, request_get, db_queries):
 
 def test_formset_m2m_nested(request_post, request_get, db_queries):
 
-    class MyAnotherNestedForm(MyAnotherForm):
-
-        subforms = {
-            'fadd': MyAdditionalForm,
-        }
-
     class MyFormWithSet(MyAnotherThingForm):
 
         subforms = {
@@ -215,6 +207,7 @@ def test_formset_m2m_nested(request_post, request_get, db_queries):
     assert 'name="fm2m-TOTAL_FORMS"' in html
     assert 'name="fm2m-0-fsome" value="888" ' in html
     assert 'name="fm2m-0-fadd-fnum" value="eee" ' in html
+    assert 'fm2m-0-id' in html
 
     assert AnotherThing.objects.count() == 1
     assert Another.objects.count() == 2
@@ -274,8 +267,8 @@ def test_fk(request_post, request_get):
             'fforeign': MyAnotherForm,
         }
 
-        class Composer(MyForm.Composer):
-            opt_render_help = False
+        class Composer(Composer):
+            opt_render_labels = True
 
         class Meta(MyForm.Meta):
             fields = ['fchar', 'fforeign']
@@ -331,8 +324,8 @@ class MyFormWithFkNested(MyForm):
         'fforeign': MyAnotherNestedForm,
     }
 
-    class Composer(MyForm.Composer):
-        opt_render_help = False
+    class Composer(Composer):
+        opt_render_labels = True
 
     class Meta(MyForm.Meta):
         fields = ['fchar', 'fforeign']
@@ -410,13 +403,16 @@ def form_cls(form):
 
     def form_cls_(*, model=None, use_fields=None):
 
+        class MyComposer(Composer):
+            opt_render_help = True
+
         class SubForm1(Form):
 
             first = fields.CharField(label='some', help_text='some help')
             second = fields.ChoiceField(label='variants', choices={'1': 'one', '2': 'two'}.items())
 
         form_kwargs = dict(
-            composer=Composer,
+            composer=MyComposer,
             somefield=fields.CharField(),
             fchar=fields.CharField(max_length=30),
             subforms={'fchar': SubForm1},
@@ -497,7 +493,7 @@ def test_json_subforms(form_cls, request_get, request_post):
     assert thing.ftext == 'two'
 
 
-class MyAnotherNestedForm(MyAnotherForm):
+class MyAnotherNestedForm2(MyAnotherForm):
 
     readonly_fields = '__all__'
 
@@ -509,7 +505,7 @@ class MyAnotherNestedForm(MyAnotherForm):
 class MyFormWithSet(MyAnotherThingForm):
 
     subforms = {
-        'fm2m': MyAnotherNestedForm,
+        'fm2m': MyAnotherNestedForm2,
     }
 
 
