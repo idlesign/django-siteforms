@@ -1,3 +1,4 @@
+import re
 from typing import Type, Union, List
 
 import pytest
@@ -86,3 +87,18 @@ def form_fixture_match(datafix_read):
         assert rendered == datafix_read(fname).strip()
 
     return form_fixture_match_
+
+
+RE_INPUTS = re.compile(r'\n<input [^<]*name="([^"]*)"[^<]*value="([^"]*)"')
+
+
+@pytest.fixture
+def get_inputs():
+
+    def get_inputs_(html):
+        matches = []
+        for match in RE_INPUTS.finditer(html.replace('<input', '\n<input')):
+            matches.append(match.groups())
+        return matches
+
+    return get_inputs_

@@ -45,3 +45,22 @@ class AnotherThing(models.Model):
 
     fchar = models.CharField(max_length=50, verbose_name='fchar_name')
     fm2m = models.ManyToManyField(Another, verbose_name='fm2m_name')
+
+
+class ThroughModel(models.Model):
+
+    with_through = models.ForeignKey('WithThrough', on_delete=models.CASCADE)
+    additional = models.ForeignKey(Additional, on_delete=models.CASCADE)
+    payload = models.CharField(max_length=10)
+    notouch = models.CharField(max_length=10)
+
+
+class WithThrough(models.Model):
+
+    title = models.CharField(max_length=10)
+    additionals = models.ManyToManyField(Additional, through=ThroughModel)
+
+    @property
+    def through(self):
+        items = self.additionals.through.objects.filter(with_through=self)
+        return items

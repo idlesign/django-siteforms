@@ -1,8 +1,8 @@
 import pytest
-from django.forms import fields
+from django.forms import fields, ModelMultipleChoiceField
 
 from siteforms.composers.base import FormComposer
-from siteforms.tests.testapp.models import Thing, Another, Additional, AnotherThing, Link
+from siteforms.tests.testapp.models import Thing, Another, Additional, AnotherThing, Link, WithThrough, ThroughModel
 from siteforms.toolbox import ModelForm, Form
 
 
@@ -10,6 +10,12 @@ class Composer(FormComposer):
 
     opt_render_help = False
     opt_render_labels = False
+
+
+class ModelFormBase(ModelForm):
+
+    class Composer(Composer):
+        pass
 
 
 class MyAnotherForm(ModelForm):
@@ -566,3 +572,65 @@ def test_render_form_tag(form_cls, request_get):
 
     form = spawn(render_form_tag=False)
     assert '<form ' not in f'{form}'
+
+
+def test_through(request_get, request_post, get_inputs):
+
+    class ThroughModelForm(ModelFormBase):
+
+        readonly_fields = {'notouch'}
+
+        subforms = {
+            'additional': MyAdditionalForm
+        }
+
+        class Meta:
+            exclude = ['with_through']
+            model = ThroughModel
+
+    class WithThroughForm(ModelFormBase):
+
+        through = ModelMultipleChoiceField(queryset=ThroughModel.objects.none())
+
+        formset_kwargs = {
+            'through': {'extra': 0}
+        }
+
+        subforms = {
+            'through': ThroughModelForm
+        }
+
+        class Meta:
+            fields = '__all__'
+            exclude = ['additionals']
+            model = WithThrough
+
+        def __init__(self, *args, **kwargs):
+            instance = kwargs.get('instance')
+            if instance:
+                self.base_fields['through'].queryset = ThroughModel.objects.filter(with_through=instance)
+            super().__init__(*args, **kwargs)
+
+    with_1 = WithThrough.objects.create(title='with_1')
+    with_2 = WithThrough.objects.create(title='with_2')
+    add_1 = Additional.objects.create(fnum='18')
+    add_2 = Additional.objects.create(fnum='19')
+    through_1 = ThroughModel.objects.create(with_through=with_1, additional=add_1, payload='dod', notouch='tut')
+    through_2 = ThroughModel.objects.create(with_through=with_2, additional=add_2, payload='aaa', notouch='yyy')
+
+    assert with_1.additionals.count() == 1
+
+    form = WithThroughForm(request=request_get(), instance=with_1)
+    html = f'{form}'
+    assert '<form' in html
+
+    params = dict(get_inputs(html))
+    assert len(params) == 9
+    params['__submit'] = 'siteform'
+    assert 'through-0-id' in params
+
+    form = WithThroughForm(request=request_post(data=params), instance=with_1, src='POST')
+    # todo
+    form.is_valid()
+    html = f'{form}'
+    print(html)
