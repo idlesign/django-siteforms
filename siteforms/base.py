@@ -4,7 +4,8 @@ from typing import Type, Set, Dict, Union, Generator, Callable, Any
 from django.forms import (
     BaseForm,
     modelformset_factory, HiddenInput,
-    ModelMultipleChoiceField, ModelChoiceField, )
+    ModelMultipleChoiceField, ModelChoiceField, BaseFormSet,
+)
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
@@ -370,7 +371,18 @@ class SiteformsMixin(BaseForm):
             return True
 
         for subform in self._iter_subforms():
-            is_multipart = subform.is_multipart()
+
+            if isinstance(subform, BaseFormSet):
+                # special case this since Django's implementation
+                # won't consider empty form at all.
+                if subform.forms:
+                    is_multipart = subform.forms[0].is_multipart()
+
+                is_multipart = is_multipart or subform.empty_form.is_multipart()
+
+            else:
+                is_multipart = subform.is_multipart()
+
             if is_multipart:
                 break
 
