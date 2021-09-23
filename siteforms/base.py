@@ -223,9 +223,8 @@ class SiteformsMixin(BaseForm):
             if getattr(subform_cls, 'Composer', None) is None:
                 setattr(subform_cls, 'Composer', type('DynamicComposer', self.Composer.__bases__, {}))
 
-            subform_cls.Composer.opt_render_form_tag = False
-
             kwargs_form = self._subforms_kwargs.copy()
+            kwargs_form['render_form_tag'] = False
 
             # Construct a full (including parent prefixes) name prefix
             # to support deeply nested forms.
