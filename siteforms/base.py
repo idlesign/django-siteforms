@@ -200,28 +200,6 @@ class SiteformsMixin(BaseForm):
             })
             self._subforms_kwargs = subforms_kwargs
 
-    def _get_full_prefix(self) -> str:
-        """Get a full prefix for this form which includes all parents prefixes."""
-
-        prefix = []
-
-        self_prefix = self.prefix
-
-        if self_prefix:
-            prefix.append(self_prefix)
-
-            parent = self.parent
-            while parent:
-                parent_prefix = parent.prefix
-
-                if not parent_prefix:
-                    break
-
-                prefix.append(prefix)
-                parent = parent.parent
-
-        return '-'.join(reversed(prefix))
-
     def get_subform(self, *, name: str) -> TypeSubform:
         """Returns a subform instance by its name
         (or possibly a name of a nested subform field, representing a form).
@@ -229,7 +207,7 @@ class SiteformsMixin(BaseForm):
         :param name:
 
         """
-        prefix = self._get_full_prefix()
+        prefix = self.prefix
 
         if prefix:
             # Strip down field name prefix to get a form name.
