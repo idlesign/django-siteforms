@@ -5,6 +5,7 @@ django-siteforms changelog
 Unreleased
 ----------
 + ReadOnlyWidget now can represent ModelMultipleChoiceField.
+* Add hidden fields for custom layout without ALL_FIELDS.
 * Fix 'render_form_tag' handling for Bootstrap 4.
 * Improved disable, readonly and hidden fields handling.
 * Improved multipart form detection and files passing to subforms.
