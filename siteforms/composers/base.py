@@ -462,6 +462,16 @@ class FormComposer:
                 group.extend([[field] for field in fields.values()])
                 fields.clear()
 
+            def add_fields_left_hidden():
+                # This will allow rendering of hidden fields.
+                # Useful in case of subforms as formsets with custom
+                # layout when ALL_FIELDS is not used but we need to preserve
+                # hidden fields with IDs to save form properly.
+                hidden = [field for field in fields.values() if field.is_hidden]
+                if hidden:
+                    grouped['_hidden'] = hidden
+                fields.clear()
+
             for group_alias, rows in form_layout.items():
 
                 group = grouped[group_alias]
@@ -497,6 +507,8 @@ class FormComposer:
                                     row_item = [row_item]
                                 row_items.append([fields.pop(row_subitem, '') for row_subitem in row_item])
                             group.append(row_items)
+
+            add_fields_left_hidden()
 
             for group_alias, rows in grouped.items():
                 out.append(render_group(group_alias, rows=rows))
