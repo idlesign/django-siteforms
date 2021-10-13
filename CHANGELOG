@@ -2,6 +2,12 @@ django-siteforms changelog
 ==========================
 
 
+Unreleased
+----------
++ Added support for append operation for attrs.
++ Added support for Form.Meta.widgets_readonly.
+
+
 v0.8.0 [2021-09-24]
 -------------------
 + ReadOnlyWidget now can represent ModelMultipleChoiceField.

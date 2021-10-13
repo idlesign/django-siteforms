@@ -1,7 +1,7 @@
 import pytest
 from django.forms import fields, ModelMultipleChoiceField
 
-from siteforms.composers.base import FormComposer
+from siteforms.composers.base import FormComposer, ALL_FIELDS
 from siteforms.tests.testapp.models import Thing, Another, Additional, AnotherThing, Link, WithThrough, ThroughModel
 from siteforms.toolbox import ModelForm, Form
 
@@ -70,6 +70,21 @@ class MyAnotherThingForm(ModelForm):
 
     class Composer(Composer):
         pass
+
+
+def test_append_attr_class():
+
+    class AdditionalWithCss(MyAdditionalForm):
+
+        class Composer(MyAdditionalForm.Composer):
+            attrs = {
+                ALL_FIELDS: {'class': 'my'},
+                'fnum': {'class': '+yours'}
+            }
+
+    frm = AdditionalWithCss()
+    html = f'{frm}'
+    assert 'class="my yours"' in html
 
 
 def test_id(form_html):

@@ -7,7 +7,14 @@ Let's show how to build a simple form.
 
     from django.shortcuts import render
     from siteforms.composers.bootstrap4 import Bootstrap4
-    from siteforms.toolbox import ModelForm
+    from siteforms.toolbox import ModelForm, ReadOnlyWidget
+
+
+    class MySmileWidget(ReadOnlyWidget):
+        """This one we'd use to render our"""
+
+        def format_value_hook(self, value):
+            return super().format_value_hook(value) + ' %) '
 
 
     class MyForm(ModelForm):
@@ -27,7 +34,10 @@ Let's show how to build a simple form.
 
         readonly_fields = {'anotherfield'}
         """One way of making fields readonly (to not to render input fields, but show a value).
+
         Use __all__ to make all fields readonly (affects subforms).
+        This mode can be useful to make cheap details pages, using the same layout as form.
+
         This can also be passed into __init__() as the keyword-argument with the same name.
 
         """
@@ -40,6 +50,11 @@ Let's show how to build a simple form.
         class Meta:
             model = MyModel  # Suppose you have a model class already.
             fields = '__all__'
+            widgets_readonly = {
+                # and here we can define our own widgets for fields
+                # that are rendered as readonly
+                'myfield': MySmileWidget,
+            }
 
     def my_view(request):
         # Initialize form using data from POST.
@@ -63,7 +78,8 @@ Now let's see how to tune our form.
 
         # Element (fields, groups, form, etc.) attributes are ruled by `attrs`.
         # Let's add rows=2 to our `contents` model field.
-        attrs={'contents': {'rows': 2}}
+        # We also add (notice + sign) 'mycss' to an existing 'class' attribute value.
+        attrs={'contents': {'rows': 2, 'class': '+mycss'}}
 
         # To group fields into named groups describe them in `groups`.
         groups={
