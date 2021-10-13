@@ -73,7 +73,6 @@ class ReadOnlyWidget(Widget):
     def format_value(self, value):
 
         bound_field = self.bound_field
-        original_widget = self.original_widget
         field = bound_field.field
         use_original_value_format = True
 
@@ -101,10 +100,6 @@ class ReadOnlyWidget(Widget):
 
         else:
             choices = getattr(field, 'choices', UNSET)
-            if choices is UNSET:
-                # Dynamic choices attached to a widget.
-                choices = getattr(original_widget, 'choices', UNSET)
-
             if choices is not UNSET:
                 # Try ro represent a choice value.
                 use_original_value_format = False
@@ -113,6 +108,7 @@ class ReadOnlyWidget(Widget):
                     value = dict(choices or {}).get(value, f'&lt;{unknown} ({value})&gt;')
 
         if use_original_value_format:
+            original_widget = self.original_widget
             if original_widget:
                 value = original_widget.format_value(value)
 
