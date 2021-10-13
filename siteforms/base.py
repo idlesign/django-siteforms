@@ -387,6 +387,9 @@ class SiteformsMixin(BaseForm):
 
         return is_multipart
 
+    def _get_widget_readonly_cls(self, field_name: str) -> Type[ReadOnlyWidget]:
+        return getattr(self.Meta, 'widgets_readonly', {}).get(field_name, ReadOnlyWidget)
+
     def _clean_fields(self):
         # this ensures valid attributes on validation including that in formsets
         self._apply_attrs(callback=super()._clean_fields)
@@ -396,6 +399,7 @@ class SiteformsMixin(BaseForm):
         disabled = self.disabled_fields
         hidden = self.hidden_fields
         readonly = self.readonly_fields
+        get_readonly_cls = self._get_widget_readonly_cls
 
         all_macro = '__all__'
 
@@ -420,7 +424,7 @@ class SiteformsMixin(BaseForm):
                         and not isinstance(base_field, SubformField)
                     )
                     if make_read_only:
-                        widget = ReadOnlyWidget(
+                        widget = get_readonly_cls(field_name)(
                             bound_field=field,
                             original_widget=original_widget,
                         )
