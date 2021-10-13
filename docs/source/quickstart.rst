@@ -21,19 +21,19 @@ Let's show how to build a simple form.
         """This form will show us how siteforms works."""
 
         disabled_fields = {'somefield'}
-        """One way of disabling fields. Use __all__ to disable all fields (affects subforms).
+        """Declarative way of disabling fields. Use __all__ to disable all fields (affects subforms).
         This can also be passed into __init__() as the keyword-argument with the same name.
 
         """
 
         hidden_fields = {'otherfield'}
-        """One way of hiding fields.
+        """Declarative way of hiding fields.
         This can also be passed into __init__() as the keyword-argument with the same name.
 
         """
 
         readonly_fields = {'anotherfield'}
-        """One way of making fields readonly (to not to render input fields, but show a value).
+        """Declarative way of making fields readonly (to not to render input fields, but show a value).
 
         Use __all__ to make all fields readonly (affects subforms).
         This mode can be useful to make cheap details pages, using the same layout as form.

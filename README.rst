@@ -60,9 +60,9 @@ Let's show how to build a simple form.
     class MyForm(ModelForm):
         """This form will show us how siteforms works."""
         
-        disabled_fields = {'somefield'}  # One way of disabling fields.
-        hidden_fields = {'otherfield'}  # One way of hiding fields.
-        readonly_fields = {'anotherfield'}  # One way of making fields readonly.
+        disabled_fields = {'somefield'}  # Declarative way of disabling fields.
+        hidden_fields = {'otherfield'}  # Declarative way of hiding fields.
+        readonly_fields = {'anotherfield'}  # Declarative way of making fields readonly.
 
         class Composer(Bootstrap4):
             """This will instruct siteforms to compose this
