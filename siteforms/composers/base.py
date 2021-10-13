@@ -191,8 +191,16 @@ class FormComposer:
     }
     """Attributes to apply to basic elements (form, fields, widget types, groups)."""
 
-    def _attrs_get(self, container: Optional[Dict[str, Any]], key: str = None, *, obj: Any = None):
-
+    def _attrs_get(
+            self,
+            container: Optional[Dict[str, Any]],
+            key: str = None,
+            *,
+            obj: Any = None,
+            accumulated: Dict[str, str] = None,
+    ):
+        accumulate = accumulated is not None
+        accumulated = accumulated or {}
         container = container or {}
 
         if key is None:
@@ -214,20 +222,28 @@ class FormComposer:
                         val = val(self, obj)
 
                 if val is not None:
+
+                    if accumulate:
+                        val_str = f'{val}'
+                        if val_str[0] == '+':
+                            # append to a value, e.g. for 'class' attribute
+                            val = f"{accumulated.get(key, '')} {val_str[1:]}"
+
                     attrs_[key] = val
 
             attrs = attrs_
 
+            if accumulate:
+                accumulated.update(**attrs)
+
         return attrs
 
     def _attrs_get_basic(self, container: Dict[str, Any], field: BoundField):
-        get_attrs = partial(self._attrs_get, container, obj=field)
+        attrs = {}
+        get_attrs = partial(self._attrs_get, container, obj=field, accumulated=attrs)
 
-        attrs = {
-            **get_attrs(ALL_FIELDS),
-            **get_attrs(field.field.widget.__class__),
-            **get_attrs(field.name),
-        }
+        for item in (ALL_FIELDS, field.field.widget.__class__, field.name):
+            attrs.update(**get_attrs(item))
 
         if isinstance(field.field.widget, ReadOnlyWidget):
             attrs.update({**get_attrs(FIELDS_READONLY)})
