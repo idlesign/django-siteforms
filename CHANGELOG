@@ -2,8 +2,8 @@ django-siteforms changelog
 ==========================
 
 
-Unreleased
-----------
+v0.9.1 [2021-12-18]
+-------------------
 * Django 4.0 compatibility improved.
 
 
