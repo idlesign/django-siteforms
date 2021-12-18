@@ -2,6 +2,11 @@ django-siteforms changelog
 ==========================
 
 
+Unreleased
+----------
+* Django 4.0 compatibility improved.
+
+
 v0.9.0 [2021-10-13]
 -------------------
 + Added support for append operation for attrs.

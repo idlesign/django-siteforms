@@ -354,8 +354,16 @@ class SiteformsMixin(BaseForm):
         """
         return self.Composer(self)
 
-    def render(self) -> str:
+    def render(self, template_name=None, context=None, renderer=None):
         """Renders this form as a string."""
+
+        if template_name:
+            # Use Django 4.0+ default implementation to avoid recursion.
+            return mark_safe((renderer or self.renderer).render(
+                template_name or self.template_name,
+                context or self.get_context(),
+            ))
+
         def render_():
             return mark_safe(self.get_composer().render(
                 render_form_tag=self.composer_render_form_tag,
