@@ -52,7 +52,6 @@ def test_nocss_validation(nocss_form_html, request_factory):
 
     html = nocss_form_html(src='POST', request=request)
     assert 'csrfmiddlewaretoken' in html
-    assert '<div>This field is required.</div>' in html
 
 
 def test_nocss_aria_described_by(nocss_form_html):

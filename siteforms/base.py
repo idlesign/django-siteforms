@@ -1,6 +1,7 @@
 import json
 from typing import Type, Set, Dict, Union, Generator, Callable, Any
 
+from django.db.models import QuerySet
 from django.forms import (
     BaseForm,
     modelformset_factory, HiddenInput,
@@ -21,6 +22,8 @@ if False:  # pragma: nocover
 TypeSubform = Union['SiteformsMixin', SiteformFormSetMixin]
 TypeDefFieldsAll = Union[Set[str], str]
 TypeDefSubforms = Dict[str, Type['SiteformsMixin']]
+
+MACRO_ALL = '__all__'
 
 
 class SiteformsMixin(BaseForm):
@@ -70,6 +73,23 @@ class SiteformsMixin(BaseForm):
 
     is_submitted: bool = False
     """Whether this form is submitted and uses th submitted data."""
+
+    filtering_rules: Dict[str, str] = {}
+    """Allows setting rules (instructions) to use this form for queryset filtering.
+    
+    Example::
+        filtering = {
+            # for these fields we use special lookups
+            'field1': 'icontains',
+            'field2_json_sub': 'sub__gt',
+        }
+    
+    """
+
+    fields_optional: TypeDefFieldsAll = '__all__'
+    fields_choice_any: TypeDefFieldsAll = '__all__'
+
+    fields_choice_any_value: str = '*'
 
     Composer: Type['FormComposer'] = None
 
@@ -414,7 +434,7 @@ class SiteformsMixin(BaseForm):
         readonly = self.readonly_fields
         get_readonly_cls = self._get_widget_readonly_cls
 
-        all_macro = '__all__'
+        all_macro = MACRO_ALL
 
         with temporary_fields_patch(self):
 
@@ -454,3 +474,63 @@ class SiteformsMixin(BaseForm):
             result = callback()
 
         return result
+
+    def filtering_apply(self, queryset: QuerySet) -> QuerySet:
+        """Applies filtering to the queryset using user-submitted
+        data cleaned by this form and filtering instructions (see .filtering) if any.
+
+        * Returns a new filtered queryset if form data is valid.
+        * If user input is invalid (form is not valid) returns initial queryset.
+
+        :param queryset:
+
+        """
+        all_macro = MACRO_ALL
+
+        fields_optional = self.fields_optional
+        fields_choice_any = self.fields_choice_any
+        fields_choice_any_value = self.fields_choice_any_value
+
+        # todo boolean field to choices
+        for field in self:
+            field_name = field.name
+            base_field = field.field
+
+            if fields_optional and (fields_optional == all_macro or field_name in fields_optional):
+                # For proper field rendering.
+                base_field.widget.is_required = False
+                # For value handling.
+                base_field.required = False
+                # For checks within model form _post_clean().
+                self.fields[field_name].required = False
+
+            if (
+                    fields_choice_any and
+                    hasattr(base_field, 'choices') and
+                    (fields_choice_any == all_macro or field_name in fields_choice_any)
+            ):
+                # todo TypedChoiceField coercion
+                base_field.choices.insert(0, (fields_choice_any_value, '----'))
+
+        if not self.is_valid():
+            return queryset
+
+        filter_kwargs = {}
+        rules = self.filtering_rules
+        cleaned_data = self.cleaned_data
+
+        for field_name, field in self.fields.items():
+
+            cleaned_value = cleaned_data.get(field_name)
+            if cleaned_value in field.empty_values:
+                continue
+
+            lookup_name = field_name
+            rule = rules.get(field_name)
+
+            if rule:
+                lookup_name = f'{lookup_name}__{rule}'
+
+            filter_kwargs[lookup_name] = cleaned_value
+
+        return queryset.filter(**filter_kwargs)
