@@ -1,8 +1,9 @@
-from django.conf.urls import url
+from django.urls import path
 
-from .views import index
+from .views import index, themed
 
 
 urlpatterns = [
-    url(r'^$', index, name='index'),
+    path('', index, name='index'),
+    path('<slug:theme>/', themed, name='themed'),
 ]

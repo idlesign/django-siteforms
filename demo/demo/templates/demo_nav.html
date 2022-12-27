@@ -1,12 +1,22 @@
 <div id="demo-navigation">
-    <div style="float: right"><a href="https://github.com/idlesign/django-siteforms">django-siteforms</a></div>
-    {% for href, title in nav_items.items %}
-        <a href="?theme={{ href }}&{% for opt_name, opt_val in opts.items %}{{ opt_name }}={{ opt_val }}&{% endfor %}">{{ title }}</a> &nbsp;|&nbsp;
+    {% for theme_name, title in nav_items.items %}
+        <a href="/{{ theme_name }}/?{% for opt_name, opt_val in opts.items %}{{ opt_name }}={{ opt_val }}&{% endfor %}">{{ title }}</a> &nbsp;|&nbsp;
     {% endfor %}
     <div id="opts">
-        {% for opt in opts %}
-            <span class="opt">{{ opt }}: <a href="{{ url }}&{{ opt }}=1">on</a> <a href="{{ url }}&{{ opt }}=0">off</a> |</span>
+        <b>Options:</b>
+        {% for opt, opt_val in opts.items %}
+            <div class="opt">{{ opt }}:
+                {% if not opt_val or opt_val == "1" %}
+                    <a href="{{ url }}&{{ opt }}=0" class="">off</a>
+                {% endif %}
+
+                {% if not opt_val or opt_val == "0" %}
+                    <a href="{{ url }}&{{ opt }}=1" class="">on</a>
+                {% endif %}
+            </div>
         {% endfor %}
     </div>
+    <div style="float: right"><a href="https://github.com/idlesign/django-siteforms">django-siteforms</a> &nbsp;</div>
     <hr>
 </div>
+<div style="clear: both;"></div>

@@ -13,18 +13,3 @@ def language_activator(get_response):
         return get_response(request)
 
     return middleware
-
-
-def theme_activator(get_response):
-
-    def middleware(request):
-
-        theme = request.GET.get('theme', 'none')
-        if theme:
-            theme = '_' + theme
-
-        request.theme = theme
-
-        return get_response(request)
-
-    return middleware

@@ -33,7 +33,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'demo.middleware.language_activator',
-    'demo.middleware.theme_activator',
 ]
 
 ROOT_URLCONF = 'settings.urls'

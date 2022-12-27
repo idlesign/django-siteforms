@@ -15,9 +15,19 @@
         }
         #opts {
             font-size: 12px;
+            width: 220px;
+            background: #eaeaea;
+            float: right;
+            padding: 3px;
         }
         .opt{
             margin-right: 10px;
+        }
+        body {
+            margin-bottom: 5em;
+        }
+        #listing {
+            padding: 2em;
         }
     </style>
 
@@ -27,5 +37,29 @@
     {% include 'demo_nav.html' %}
     <h1 align="center">{{ title }}</h1>
     {% block body %}{% endblock %}
+    {% block listing %}
+        <hr>
+        <h2>Filtering</h2>
+        <div id="listing" align="center">
+            {{ form_filtering1 }}
+
+            <table width="100%">
+                <tr>
+                    <th>created</th>
+                    <th>title</th>
+                    <th>approved</th>
+                    <th>status</th>
+                </tr>
+                {% for article in listing %}
+                    <tr>
+                        <td>{{ article.date_created }}</td>
+                        <td>{{ article.title }}</td>
+                        <td>{{ article.approved }}</td>
+                        <td>{{ article.status }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endblock %}
 </body>
 </html>
