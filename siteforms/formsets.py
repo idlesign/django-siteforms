@@ -6,7 +6,7 @@ from .utils import bind_subform
 class SiteformFormSetMixin(BaseFormSet):
     """Custom formset to allow fields rendering subform to have multiple forms."""
 
-    def render(self):
+    def render(self, *args, **kwargs):
         return f'{self.management_form}' + ('\n'.join(form.render() for form in self))
 
     def _construct_form(self, i, **kwargs):
