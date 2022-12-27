@@ -79,6 +79,7 @@ class SiteformsMixin(BaseForm):
             request: HttpRequest = None,
             src: str = None,
             id: str = '',  # noqa
+            target_url: str = '',
             parent: 'SiteformsMixin' = None,
             hidden_fields: Set[str] = UNSET,
             formset_kwargs: dict = UNSET,
@@ -97,6 +98,9 @@ class SiteformsMixin(BaseForm):
 
         :param id: Form ID. If defined the form will be rendered
             with this ID. This ID will also be used as auto_id prefix for fields.
+
+        :param target_url: Where form data should be sent.
+            This will appear in 'action' attribute of a 'form' tag.
 
         :param parent: Parent form for a subform.
 
@@ -132,6 +136,7 @@ class SiteformsMixin(BaseForm):
         self.composer_render_form_tag = render_form_tag
 
         self.id = id
+        self.target_url = target_url
 
         if id and 'auto_id' not in kwargs:
             kwargs['auto_id'] = f'{id}_%s'

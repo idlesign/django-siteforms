@@ -12,7 +12,7 @@ from ..utils import merge_dict, UNSET
 from ..widgets import ReadOnlyWidget
 
 if False:  # pragma: nocover
-    from ..toolbox import SiteformsMixin  # noqa
+    from ..base import SiteformsMixin  # noqa
 
 TypeAttrs = Dict[Union[str, Type[Input]], Any]
 
@@ -567,12 +567,17 @@ class FormComposer:
             if request and form.src == 'POST':  # do not leak csrf token for GET
                 csrf = f'<input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}">'
 
+            action = ''
+            target_url = form.target_url
+            if target_url:
+                action = f' action="{target_url}"'
+
             html = (
-                f'<form {flatatt(get_attr(FORM))}{form_id}>'
-                f"{csrf}"
-                f"{html}"
-                f"{self._render_submit()}"
-                "</form>"
+                f'<form {flatatt(get_attr(FORM))}{form_id}{action}>'
+                f'{csrf}'
+                f'{html}'
+                f'{self._render_submit()}'
+                '</form>'
             )
 
         return html
