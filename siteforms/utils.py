@@ -46,7 +46,7 @@ def bind_subform(*, subform: 'TypeSubform', field: Field):
 def temporary_fields_patch(form):
     """Too bad. Since Django's BoundField uses form base fields attributes,
     (but not its own, e.g. for disabled in .build_widget_attrs())
-    we are forced to store and restore previous values to not to have side
+    we are forced to store and restore previous values not to have side
     effects on form classes reuse.
 
     .. warning:: Possible race condition. Maybe fix that someday?
