@@ -564,7 +564,7 @@ class FormComposer:
             request = form.request
 
             csrf = ''
-            if request:
+            if request and form.src == 'POST':  # do not leak csrf token for GET
                 csrf = f'<input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}">'
 
             html = (

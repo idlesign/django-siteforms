@@ -47,6 +47,10 @@ def test_nocss_basic(nocss_form_html, form_fixture_match):
 def test_nocss_validation(nocss_form_html, request_factory):
     request = request_factory().get('some?__submit=siteform')
     html = nocss_form_html(src='GET', request=request)
+    assert 'csrfmiddlewaretoken' not in html
+    assert '<div>This field is required.</div>' in html
+
+    html = nocss_form_html(src='POST', request=request)
     assert 'csrfmiddlewaretoken' in html
     assert '<div>This field is required.</div>' in html
 

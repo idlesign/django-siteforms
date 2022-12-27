@@ -4,6 +4,7 @@ django-siteforms changelog
 
 Unreleased
 ----------
+* Do not leak CSRF token for GET (closes #3).
 * Rename SubformBoundField -> EnhancedBoundField.
 
 

@@ -640,12 +640,11 @@ def test_through(request_get, request_post, get_inputs):
     assert '<form' in html
 
     params = dict(get_inputs(html))
-    assert len(params) == 9
+    assert len(params) == 8
     params['__submit'] = 'siteform'
     assert 'through-0-id' in params
 
     form = WithThroughForm(request=request_post(data=params), instance=with_1, src='POST')
-    # todo
     form.is_valid()
     html = f'{form}'
-    print(html)
+    assert 'id="id_through-0-id"' in html
