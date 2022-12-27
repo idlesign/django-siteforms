@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from .utils import UNSET
 
 if False:  # pragma: nocover
-    from .fields import SubformBoundField  # noqa
+    from .fields import EnhancedBoundField  # noqa
     from .base import TypeSubform
 
 
@@ -21,7 +21,7 @@ class SubformWidget(Widget):
     
     """
 
-    bound_field: Optional['SubformBoundField'] = None
+    bound_field: Optional['EnhancedBoundField'] = None
     """Bound runtime by SubformBoundField when a widget is get."""
 
     def render(self, name, value, attrs=None, renderer=None):
@@ -47,7 +47,7 @@ class ReadOnlyWidget(Widget):
     def __init__(
             self,
             *args,
-            bound_field: 'SubformBoundField' = None,
+            bound_field: 'EnhancedBoundField' = None,
             original_widget: Widget = None,
             **kwargs
     ):
@@ -130,4 +130,4 @@ class ReadOnlyWidget(Widget):
 
     @classmethod
     def wrap_value(cls, *, value: Any, attrs: dict):
-        return f"<div {flatatt(attrs)}>{value}</div>"
+        return f'<div {flatatt(attrs)}>{value}</div>'

@@ -9,7 +9,7 @@ from django.forms import (
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
-from .fields import SubformBoundField, SubformField
+from .fields import SubformField, EnhancedBoundField
 from .formsets import ModelFormSet, SiteformFormSetMixin
 from .utils import bind_subform, UNSET, temporary_fields_patch
 from .widgets import ReadOnlyWidget
@@ -414,7 +414,7 @@ class SiteformsMixin(BaseForm):
         with temporary_fields_patch(self):
 
             for field in self:
-                field: SubformBoundField
+                field: EnhancedBoundField
                 field_name = field.name
                 base_field = field.field
                 instance_field = self.fields[field_name]

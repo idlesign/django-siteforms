@@ -5,7 +5,7 @@ from django.forms.forms import DeclarativeFieldsMetaclass
 from django.forms.models import ModelFormMetaclass
 
 from .base import SiteformsMixin
-from .fields import SubformField
+from .fields import SubformField, EnhancedField
 
 
 class BaseMeta(DeclarativeFieldsMetaclass):
@@ -20,7 +20,7 @@ class BaseMeta(DeclarativeFieldsMetaclass):
             field: Field
             # Swap bound field to our custom one
             # to add .bound_field attr to every widget.
-            field.get_bound_field = MethodType(SubformField.get_bound_field, field)
+            field.get_bound_field = MethodType(EnhancedField.get_bound_field, field)
 
             # Use custom field for subforms.
             if subforms.get(field_name):

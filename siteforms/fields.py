@@ -10,7 +10,23 @@ if False:  # pragma: nocover
     from .base import TypeSubform  # noqa
 
 
-class SubformField(Field):
+class EnhancedBoundField(BoundField):
+    """This custom bound field allows widgets to access the field itself."""
+
+    def as_widget(self, widget=None, attrs=None, only_initial=False):
+        widget = widget or self.field.widget
+        widget.bound_field = self
+        return super().as_widget(widget, attrs, only_initial)
+
+
+class EnhancedField(Field):
+    """This custom field offers improvements over the base one."""
+
+    def get_bound_field(self, form, field_name):
+        return EnhancedBoundField(form, self, field_name)
+
+
+class SubformField(EnhancedField):
     """Field representing a subform."""
 
     widget = SubformWidget
@@ -24,9 +40,6 @@ class SubformField(Field):
         self.label = original_field.label
         self.help_text = original_field.help_text
         self.to_python = original_field.to_python
-
-    def get_bound_field(self, form, field_name):
-        return SubformBoundField(form, self, field_name)
 
     def clean(self, value):
         original_field = self.original_field
@@ -74,12 +87,3 @@ class SubformField(Field):
             value = json.dumps(value)
 
         return original_field.clean(value)
-
-
-class SubformBoundField(BoundField):
-    """This custom bound field allows widgets to access the field itself."""
-
-    def as_widget(self, widget=None, attrs=None, only_initial=False):
-        widget = widget or self.field.widget
-        widget.bound_field = self
-        return super().as_widget(widget, attrs, only_initial)
