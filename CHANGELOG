@@ -4,6 +4,7 @@ django-siteforms changelog
 
 Unreleased
 ----------
++ Add 'opt_feedback_valid' for Bootstrap 4, 5 (closes #6).
 + Add 'target_url' form parameter (closes #7).
 + Add basic support for filtering forms (closes #5).
 + Add support for Bootstrap 5 (closes #4).

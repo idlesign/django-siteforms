@@ -35,3 +35,5 @@ Options
 * ``opt_disabled_plaintext`` - Render disabled fields as plain text.
 
 * ``opt_feedback_tooltips`` - Whether to render feedback in tooltips.
+
+* ``opt_feedback_valid`` - Whether to render feedback for valid fields.

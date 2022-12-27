@@ -42,6 +42,9 @@ class Bootstrap4(FormComposer):
     opt_feedback_tooltips: bool = False
     """Whether to render feedback in tooltips."""
 
+    opt_feedback_valid: bool = True
+    """Whether to render feedback for valid fields."""
+
     _size_mod: Tuple[str, ...] = ('col-form-label', 'form-control', 'input-group')
     _file_cls = {'class': 'form-control-file'}
 
@@ -168,7 +171,7 @@ class Bootstrap4(FormComposer):
         css = attrs.get('class', '')
 
         if self.form.is_submitted:
-            css += ' is-invalid' if field.errors else ' is-valid'
+            css = f"{css} {'is-invalid' if field.errors else ('is-valid' if self.opt_feedback_valid else '')}"
 
         if self.opt_disabled_plaintext:
             is_disabled = field.name in self.form.disabled_fields
