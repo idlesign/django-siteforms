@@ -35,5 +35,3 @@ Options
 * ``opt_disabled_plaintext`` - Render disabled fields as plain text.
 
 * ``opt_feedback_tooltips`` - Whether to render feedback in tooltips.
-
-* ``opt_tag_feedback`` - Tag to be used for feedback. Default: div.

@@ -8,10 +8,10 @@ Just inherit from your composer from base composer class and set attributes and 
 
 .. code-block:: python
 
-    from siteforms.composers.bootstrap4 import Bootstrap4
+    from siteforms.composers.bootstrap5 import Bootstrap5
 
 
-    class Composer(Bootstrap4):
+    class Composer(Bootstrap5):
 
         opt_render_labels = False
         opt_placeholder_label = True
@@ -144,13 +144,13 @@ This can be considered as an alternative to complex widgets.
 
 .. code-block:: python
 
-    from siteforms.composers.bootstrap4 import Bootstrap4
+    from siteforms.composers.bootstrap5 import Bootstrap5
     from siteforms.toolbox import ModelForm, Form
 
     class SubForm(Form):
         """This form we'll include in our main form."""
 
-        class Composer(Bootstrap4):
+        class Composer(Bootstrap5):
 
             opt_render_labels = False
             opt_placeholder_label = True
@@ -178,7 +178,7 @@ This can be considered as an alternative to complex widgets.
         """
         subforms = {'myfield': SubForm}  # Map field name to subform class.
 
-        class Composer(Bootstrap4):
+        class Composer(Bootstrap5):
 
             opt_columns =  True
 

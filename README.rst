@@ -31,11 +31,13 @@ Features:
 * Simple ways to make fields hidden, disabled, readonly
 * Aria-friendly (Accessible Rich Internet Applications)
 * Complex widgets (e.g. using values from multiple fields) support
+* Filter-forms (use form for queryset filtering)
 
 Supported styling:
 
 * No CSS
 * Bootstrap 4
+* Bootstrap 5
 
 
 Usage
@@ -53,7 +55,7 @@ Let's show how to build a simple form.
 .. code-block:: python
 
     from django.shortcuts import render
-    from siteforms.composers.bootstrap4 import Bootstrap4
+    from siteforms.composers.bootstrap5 import Bootstrap5
     from siteforms.toolbox import ModelForm
 
 
@@ -64,9 +66,9 @@ Let's show how to build a simple form.
         hidden_fields = {'otherfield'}  # Declarative way of hiding fields.
         readonly_fields = {'anotherfield'}  # Declarative way of making fields readonly.
 
-        class Composer(Bootstrap4):
+        class Composer(Bootstrap5):
             """This will instruct siteforms to compose this
-            form using Bootstrap 4 styling.
+            form using Bootstrap 5 styling.
 
             """
         class Meta:
@@ -87,11 +89,11 @@ Now let's see how to tune our form.
 
 .. code-block:: python
 
-    from siteforms.composers.bootstrap4 import Bootstrap4, FORM, ALL_FIELDS
+    from siteforms.composers.bootstrap5 import Bootstrap5, FORM, ALL_FIELDS
 
     class Composer(Bootstrap4):
 
-        opt_size='sm'  # Bootstrap 4 has sizes, so let's make our form small.
+        opt_size='sm'  # Bootstrap 5 has sizes, so let's make our form small.
 
         # Element (fields, groups, form, etc.) attributes are ruled by `attrs`.
         # Let's add rows=2 to our `contents` model field.

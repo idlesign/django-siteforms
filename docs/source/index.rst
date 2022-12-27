@@ -26,6 +26,7 @@ Supported styling:
 
 * No CSS
 * Bootstrap 4
+* Bootstrap 5
 
 
 Requirements
@@ -45,3 +46,4 @@ Table of Contents
     quickstart
     advanced
     bs4
+    bs5
