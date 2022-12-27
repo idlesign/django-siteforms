@@ -1,0 +1,38 @@
+Bootstrap 5
+===========
+
+To use Bootstrap 5 styling add ``Bootstrap5`` inherited composer in your form class.
+
+.. code-block:: python
+
+    from siteforms.composers.bootstrap5 import Bootstrap5
+
+
+    class Composer(Bootstrap5):
+        """This will instruct siteforms to compose this
+        form using Bootstrap 5 styling.
+
+        """
+
+
+Options
+-------
+
+* ``opt_form_inline`` - Make form inline.
+
+* ``opt_columns`` - Enabled two-columns mode.
+
+  Expects a columns tuple: (label_columns_count, control_columns_count).
+
+  If `True` default tuple ('col-2', 'col-10') is used.
+
+
+* ``opt_checkbox_switch`` - Use switches for checkboxes (if custom controls).
+
+* ``opt_size`` - Apply size to form elements. E.g. ``Bootstrap5.SIZE_SMALL``
+
+* ``opt_disabled_plaintext`` - Render disabled fields as plain text.
+
+* ``opt_labels_floating`` - Whether to render labels floating inside inputs.
+
+* ``opt_feedback_valid`` - Whether to render feedback for valid fields.

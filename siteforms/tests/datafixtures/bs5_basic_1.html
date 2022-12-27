@@ -1,0 +1,20 @@
+<form  enctype="multipart/form-data" method="POST">
+<div class="mb-3"><label class="form-label" for="id_fchar">Fchar_name:</label><input type="text" name="fchar" maxlength="50" aria-describedby="id_fchar_help" class="form-control" required id="id_fchar"><div  class="form-text" id="id_fchar_help">fchar_help</div></div>
+<div class="mb-3"><label class="form-label" for="id_fchoices">Fchoices_name:</label><select name="fchoices" aria-describedby="id_fchoices_help" class="form-select" required id="id_fchoices">
+  <option value="" selected>---------</option>
+
+  <option value="one">1</option>
+
+  <option value="two">2</option>
+
+</select><div  class="form-text" id="id_fchoices_help">fchoices_help</div></div>
+<div class="mb-3"><div class="mb-3 form-check"><input type="checkbox" name="fbool" aria-describedby="id_fbool_help" class="form-check-input" id="id_fbool"><label class="form-check-label" for="id_fbool">Fbool_name</label><div  class="form-text" id="id_fbool_help">fbool_help</div></div></div>
+<div class="mb-3"><label class="form-label" for="id_ftext">Ftext_name:</label><textarea name="ftext" cols="40" rows="10" aria-describedby="id_ftext_help" class="form-control" required id="id_ftext">
+</textarea><div  class="form-text" id="id_ftext_help">ftext_help</div></div>
+<div class="mb-3"><label class="form-label" for="id_ffile">Ffile_name:</label><input type="file" name="ffile" aria-describedby="id_ffile_help" class="form-control" required id="id_ffile"></div>
+<div class="mb-3"><label class="form-label" for="id_fforeign">Fforeign_name:</label><select name="fforeign" aria-describedby="id_fforeign_help" class="form-select" required id="id_fforeign">
+  <option value="" selected>---------</option>
+
+</select></div>
+<div class="mb-3"><label class="form-label" for="id_fm2m">Fm2m_name:</label><select name="fm2m" aria-describedby="id_fm2m_help" class="form-select" required id="id_fm2m" multiple>
+</select></div><div class="mb-3"><button type="submit" name="__submit" value="siteform" class="btn btn-primary mt-3">Submit</button></div></form>

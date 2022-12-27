@@ -5,6 +5,7 @@ django-siteforms changelog
 Unreleased
 ----------
 + Add 'target_url' form parameter (closes #7).
++ Add support for Bootstrap 5 (closes #4).
 * Do not leak CSRF token for GET (closes #3).
 * Rename SubformBoundField -> EnhancedBoundField.
 
