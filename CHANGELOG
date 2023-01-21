@@ -2,8 +2,8 @@ django-siteforms changelog
 ==========================
 
 
-Unreleased
-----------
+v1.0.0 [2023-01-21]
+-------------------
 ! Dropped QA for Python 3.6.
 + Add 'opt_feedback_valid' for Bootstrap 4, 5 (closes #6).
 + Add 'target_url' form parameter (closes #7).
