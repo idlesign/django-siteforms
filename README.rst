@@ -91,7 +91,7 @@ Now let's see how to tune our form.
 
     from siteforms.composers.bootstrap5 import Bootstrap5, FORM, ALL_FIELDS
 
-    class Composer(Bootstrap4):
+    class Composer(Bootstrap5):
 
         opt_size='sm'  # Bootstrap 5 has sizes, so let's make our form small.
 
