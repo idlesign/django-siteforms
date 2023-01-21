@@ -1,7 +1,7 @@
 from siteforms.composers.base import FormComposer
 from siteforms.composers.bootstrap4 import Bootstrap4, FORM, ALL_FIELDS
 from siteforms.composers.bootstrap5 import Bootstrap5
-from siteforms.toolbox import ModelForm, Form, fields
+from siteforms.toolbox import ModelForm, Form, fields, FilteringModelForm
 from .models import Article, Author
 from .utils import render_themed
 
@@ -131,7 +131,7 @@ def index(request, theme='none'):
         instance=article,
     )
 
-    class FilterForm(ModelForm):
+    class FilterForm(FilteringModelForm):
 
         Composer = type(
             'Composer', composer,
@@ -145,7 +145,7 @@ def index(request, theme='none'):
     form_filtering1 = FilterForm(request=request, src='GET', id='flt')
 
     qs = Article.objects.all()
-    listing = form_filtering1.filtering_apply(qs)
+    listing, _ = form_filtering1.filtering_apply(qs)
 
     if form1.is_valid():
         form1.add_error(None, 'This is a non-field error 1.')

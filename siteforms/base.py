@@ -1,16 +1,18 @@
 import json
-from typing import Type, Set, Dict, Union, Generator, Callable, Any
+from types import MethodType
+from typing import Type, Set, Dict, Union, Generator, Callable, Any, Tuple
 
 from django.db.models import QuerySet
 from django.forms import (
     BaseForm,
     modelformset_factory, HiddenInput,
-    ModelMultipleChoiceField, ModelChoiceField, BaseFormSet,
+    ModelMultipleChoiceField, ModelChoiceField, BaseFormSet, BooleanField, Select, Field,
 )
-from django.http import HttpRequest
+from django.http import HttpRequest, QueryDict
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 
-from .fields import SubformField, EnhancedBoundField
+from .fields import SubformField, EnhancedBoundField, EnhancedField
 from .formsets import ModelFormSet, SiteformFormSetMixin
 from .utils import bind_subform, UNSET, temporary_fields_patch
 from .widgets import ReadOnlyWidget
@@ -24,6 +26,10 @@ TypeDefFieldsAll = Union[Set[str], str]
 TypeDefSubforms = Dict[str, Type['SiteformsMixin']]
 
 MACRO_ALL = '__all__'
+
+YES_NO_CHOICES = [
+    (True, _('Yes')), (False, _('No'))
+]
 
 
 class SiteformsMixin(BaseForm):
@@ -73,23 +79,6 @@ class SiteformsMixin(BaseForm):
 
     is_submitted: bool = False
     """Whether this form is submitted and uses th submitted data."""
-
-    filtering_rules: Dict[str, str] = {}
-    """Allows setting rules (instructions) to use this form for queryset filtering.
-    
-    Example::
-        filtering = {
-            # for these fields we use special lookups
-            'field1': 'icontains',
-            'field2_json_sub': 'sub__gt',
-        }
-    
-    """
-
-    fields_optional: TypeDefFieldsAll = '__all__'
-    fields_choice_any: TypeDefFieldsAll = '__all__'
-
-    fields_choice_any_value: str = '*'
 
     Composer: Type['FormComposer'] = None
 
@@ -182,6 +171,29 @@ class SiteformsMixin(BaseForm):
     def __str__(self):
         return self.render()
 
+    @classmethod
+    def _meta_hook(cls):
+        """Allows hooking on meta construction (see BaseMeta)."""
+
+        subforms = cls.subforms or {}
+        base_fields = cls.base_fields
+
+        for field_name, field in base_fields.items():
+            field: Field
+            # Swap bound field with our custom one
+            # to add .bound_field attr to every widget.
+            field.get_bound_field = MethodType(EnhancedField.get_bound_field, field)
+
+            # Use custom field for subforms.
+            if subforms.get(field_name):
+                base_fields[field_name] = SubformField(
+                    original_field=field,
+                    validators=field.validators,
+                )
+
+    def _preprocess_source_data(self, data: Union[dict, QueryDict]) -> Union[dict, QueryDict]:
+        return data
+
     def _initialize_pre(self, *, args, kwargs):
         # NB: may mutate args and kwargs
 
@@ -196,6 +208,8 @@ class SiteformsMixin(BaseForm):
             self.is_submitted = is_submitted
 
             if is_submitted and request.method == src:
+
+                data = self._preprocess_source_data(data)
 
                 self.data = data
                 files = request.FILES
@@ -475,45 +489,113 @@ class SiteformsMixin(BaseForm):
 
         return result
 
-    def filtering_apply(self, queryset: QuerySet) -> QuerySet:
+
+class FilteringSiteformsMixin(SiteformsMixin):
+    """Filtering forms base mixin."""
+
+    filtering_rules: Dict[str, str] = {}
+    """Allows setting rules (instructions) to use this form for queryset filtering.
+
+    Example::
+        filtering = {
+            # for these fields we use special lookups
+            'field1': 'icontains',
+            'field2_json_sub': 'sub__gt',
+        }
+
+    """
+
+    filtering_fields_optional: TypeDefFieldsAll = '__all__'
+    """Fields that should be considered optional for filtering. 
+    Use __all__ to describe all fields.
+
+    """
+
+    filtering_fields_choice_undefined: TypeDefFieldsAll = '__all__'
+    """Fields with choices that should include an <undefined> item for filtering. 
+    Use __all__ to describe all fields.
+
+    """
+
+    filtering_choice_undefined_title: str = '----'
+    """Title for choice describing an <undefined> item for filtering."""
+
+    filtering_choice_undefined_value: str = '*'
+    """Value for choice describing an <undefined> item for filtering."""
+
+    @classmethod
+    def _meta_hook(cls):
+        super()._meta_hook()
+
+        all_macro = MACRO_ALL
+        choices_yes_no = YES_NO_CHOICES
+        fields_optional = cls.filtering_fields_optional
+        fields_choice_undef = cls.filtering_fields_choice_undefined
+        undef_choice_title = cls.filtering_choice_undefined_title
+        undef_choice_value = cls.filtering_choice_undefined_value
+
+        base_fields = cls.base_fields.copy()
+        cls.base_fields = base_fields
+
+        for field_name, field in base_fields.items():
+
+            if hasattr(field, '_fltpatched'):
+                # prevent subsequent patching
+                continue
+
+            # todo swap boolean with select to allow <no filtering>
+            # todo note that <undefined> value leads to filtering by False
+            # if isinstance(field, BooleanField):
+            #     choices = choices_yes_no.copy()
+            #     field.choices = choices
+            #     field.widget = Select(choices=choices)
+
+            if fields_optional and (fields_optional == all_macro or field_name in fields_optional):
+                # For proper field rendering.
+                field.widget.is_required = False
+                # For value handling.
+                field.required = False
+
+            if hasattr(field, 'choices') and (fields_choice_undef == all_macro or field_name in fields_choice_undef):
+                field.initial = field.initial or undef_choice_value
+                field.widget.choices.insert(0, (undef_choice_value, undef_choice_title))
+
+            field._fltpatched = True
+
+    def _preprocess_source_data(self, data: Union[dict, QueryDict]) -> Union[dict, QueryDict]:
+        data = super()._preprocess_source_data(data)
+
+        if isinstance(data, QueryDict):
+            data = data.dict()
+
+        undef_choice_value = self.filtering_choice_undefined_value
+
+        # drop undefined values beforehand not to mess with them later
+        data = {
+            key: value
+            for key, value in data.items()
+            if value != undef_choice_value
+        }
+
+        return data
+
+    def filtering_apply(self, queryset: QuerySet) -> Tuple[QuerySet, bool]:
         """Applies filtering to the queryset using user-submitted
         data cleaned by this form and filtering instructions (see .filtering) if any.
 
-        * Returns a new filtered queryset if form data is valid.
-        * If user input is invalid (form is not valid) returns initial queryset.
+        Returns a tuple of a query set and boolean:
+
+            * QuerySet
+                * Returns a new filtered queryset if form data is valid.
+                * If user input is invalid (form is not valid) returns initial queryset.
+
+            * Returns True if filters were applied to a query set.
 
         :param queryset:
 
         """
-        all_macro = MACRO_ALL
-
-        fields_optional = self.fields_optional
-        fields_choice_any = self.fields_choice_any
-        fields_choice_any_value = self.fields_choice_any_value
-
-        # todo boolean field to choices
-        for field in self:
-            field_name = field.name
-            base_field = field.field
-
-            if fields_optional and (fields_optional == all_macro or field_name in fields_optional):
-                # For proper field rendering.
-                base_field.widget.is_required = False
-                # For value handling.
-                base_field.required = False
-                # For checks within model form _post_clean().
-                self.fields[field_name].required = False
-
-            if (
-                    fields_choice_any and
-                    hasattr(base_field, 'choices') and
-                    (fields_choice_any == all_macro or field_name in fields_choice_any)
-            ):
-                # todo TypedChoiceField coercion
-                base_field.choices.insert(0, (fields_choice_any_value, '----'))
-
         if not self.is_valid():
-            return queryset
+            return queryset, False
 
         filter_kwargs = {}
         rules = self.filtering_rules
@@ -533,4 +615,4 @@ class SiteformsMixin(BaseForm):
 
             filter_kwargs[lookup_name] = cleaned_value
 
-        return queryset.filter(**filter_kwargs)
+        return queryset.filter(**filter_kwargs), bool(filter_kwargs)

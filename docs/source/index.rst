@@ -45,5 +45,6 @@ Table of Contents
 
     quickstart
     advanced
+    filtering
     bs4
     bs5
