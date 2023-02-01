@@ -1,7 +1,7 @@
 import json
 from types import MethodType
 from typing import Type, Set, Dict, Union, Generator, Callable, Any, Tuple
-
+from django.utils.datastructures import MultiValueDict
 from django.db.models import QuerySet
 from django.forms import (
     BaseForm,
@@ -193,6 +193,24 @@ class SiteformsMixin(BaseForm):
                     validators=field.validators,
                 )
 
+    @classmethod
+    def _combine_dicts(cls, *, args: list, kwargs: dict, src: dict, arg_idx: int, kwargs_key: str) -> MultiValueDict:
+
+        try:
+            data_args = args[arg_idx]
+        except IndexError:
+            data_args = None
+
+        if data_args is None:
+            data_args = kwargs.pop(kwargs_key, {})
+
+        combined = MultiValueDict()
+        combined.update(src)
+        if data_args:
+            combined.update(data_args)
+
+        return combined
+
     def _preprocess_source_data(self, data: Union[dict, QueryDict]) -> Union[dict, QueryDict]:
         return data
 
@@ -221,10 +239,17 @@ class SiteformsMixin(BaseForm):
 
             if is_submitted and request.method == src:
 
+                data = self._combine_dicts(
+                    args=args, kwargs=kwargs,
+                    src=data, arg_idx=0, kwargs_key='data'
+                )
                 data = self._preprocess_source_data(data)
-
                 self.data = data
-                files = request.FILES
+
+                files = self._combine_dicts(
+                    args=args, kwargs=kwargs,
+                    src=request.FILES, arg_idx=1, kwargs_key='files'
+                )
                 self.files = files
 
                 if args:
@@ -585,6 +610,7 @@ class FilteringSiteformsMixin(SiteformsMixin):
 
         undef_choice_value = self.filtering_choice_undefined_value
 
+        # todo maybe support MultiValueDict
         # drop undefined values beforehand not to mess with them later
         data = {
             key: value

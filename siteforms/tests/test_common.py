@@ -115,13 +115,18 @@ def test_args_data(request_post):
     thing = Thing()
     thing.save()
 
-    form = MyForm({'fchar': '1'}, src='POST', request=request_post(data={
-        '__submit': 'siteform',
-        'fchar': '2',
-    }))
+    form = MyForm(
+        {'fchar': '1', 'ftext': 'populated'},
+        src='POST',
+        request=request_post(data={'__submit': 'siteform', 'fchar': '2', 'fchoices': '2'}),
+    )
 
-    # automatic `src` handling overrides `data` as the first arg
-    assert form.data['fchar'] == '2'
+    # both datas are combined, src-request data has lesser priority
+    # automatic `src` handling doesn't override `data` as the first arg or kwarg
+    data = form.data.dict()
+    assert data['fchar'] == '1'
+    assert data['ftext'] == 'populated'
+    assert data['fchoices'] == '2'
 
 
 def test_fields_disabled_all():

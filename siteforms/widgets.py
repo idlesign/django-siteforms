@@ -30,7 +30,7 @@ class SubformWidget(Widget):
 
     def value_from_datadict(self, data, files, name):
         form = self.form
-        if form.is_valid():
+        if form and form.is_valid():
             # validate to get the cleaned data
             # that would be used as data for subform
             return form.cleaned_data
