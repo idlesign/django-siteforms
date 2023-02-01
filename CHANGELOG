@@ -4,6 +4,7 @@ django-siteforms changelog
 
 Unreleased
 ----------
+* Allow getting 'widgets_readonly' for forms without Meta (closes #8).
 * Json subforms serialization improved (support date-related, decimal, uuid fields) (closes #9).
 
 

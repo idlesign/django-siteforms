@@ -436,8 +436,11 @@ class SiteformsMixin(BaseForm):
 
         return is_multipart
 
+    def _get_meta_option(self, name: str, default: Any) -> Any:
+        return getattr(getattr(self, 'Meta', None), name, default)
+
     def _get_widget_readonly_cls(self, field_name: str) -> Type[ReadOnlyWidget]:
-        return getattr(self.Meta, 'widgets_readonly', {}).get(field_name, ReadOnlyWidget)
+        return self._get_meta_option('widgets_readonly', {}).get(field_name, ReadOnlyWidget)
 
     def _clean_fields(self):
         # this ensures valid attributes on validation including that in formsets
