@@ -19,8 +19,10 @@ Features:
 * Declarative attributes for elements
 * Simplified declarative forms layout, allowing fields ordering
 * Simple ways to make fields hidden, disabled, readonly
+* Support for fields from model's properties
 * Aria-friendly (Accessible Rich Internet Applications)
 * Complex widgets (e.g. using values from multiple fields) support
+* Filter-forms (use form for queryset filtering)
 
 Supported styling:
 

@@ -202,6 +202,16 @@ class SiteformsMixin(BaseForm):
         src = self.src
         request = self.request
 
+        # Get initial data from instance properties (as per property_fields)
+        instance = kwargs.get('instance')
+        if instance:
+            property_fields = self._get_meta_option('property_fields', [])
+            if property_fields:
+                initial = {}
+                for property_field in property_fields:
+                    initial[property_field] = getattr(instance, property_field)
+                kwargs['initial'] = {**initial, **kwargs.get('initial', {})}
+
         # Handle user supplied data.
         if src and request:
             data = getattr(request, src)

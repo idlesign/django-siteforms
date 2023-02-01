@@ -40,6 +40,10 @@ class Thing(models.Model):
     fforeign = models.ForeignKey(Another, verbose_name='fforeign_name', null=True, on_delete=models.CASCADE)
     fm2m = models.ManyToManyField(Additional, verbose_name='fm2m_name')
 
+    @property
+    def aprop(self):
+        return f'he-{self.fchar}'
+
 
 class AnotherThing(models.Model):
 

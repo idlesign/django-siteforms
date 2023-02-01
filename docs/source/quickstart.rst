@@ -7,7 +7,7 @@ Let's show how to build a simple form.
 
     from django.shortcuts import render
     from siteforms.composers.bootstrap4 import Bootstrap4
-    from siteforms.toolbox import ModelForm, ReadOnlyWidget
+    from siteforms.toolbox import ModelForm, ReadOnlyWidget, fields
 
 
     class MySmileWidget(ReadOnlyWidget):
@@ -42,6 +42,9 @@ Let's show how to build a simple form.
 
         """
 
+        myprop = fields.CharField(label='from property', required=False)
+        """This field will be populated from model property."""
+
         class Composer(Bootstrap4):
             """This will instruct siteforms to compose this
             form using Bootstrap 4 styling.
@@ -49,7 +52,13 @@ Let's show how to build a simple form.
             """
         class Meta:
             model = MyModel  # Suppose you have a model class already.
+
+            # and your model defines 'myprop' property you want
+            # to put into 'myprop' field
+            property_fields = ['myprop']
+
             fields = '__all__'
+
             widgets_readonly = {
                 # and here we can define our own widgets for fields
                 # that are rendered as readonly

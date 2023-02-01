@@ -1,11 +1,11 @@
 from datetime import date
 
 import pytest
-from django.forms import fields, ModelMultipleChoiceField
+from django.forms import ModelMultipleChoiceField
 
 from siteforms.composers.base import FormComposer, ALL_FIELDS
 from siteforms.tests.testapp.models import Thing, Another, Additional, AnotherThing, Link, WithThrough, ThroughModel
-from siteforms.toolbox import ModelForm, Form
+from siteforms.toolbox import ModelForm, Form, fields
 
 
 class Composer(FormComposer):
@@ -48,6 +48,14 @@ class MyForm(ModelForm):
 
     class Composer(Composer):
         pass
+
+
+class MyFormWithProperty(MyForm):
+
+    aprop = fields.CharField(label='from property', required=False)
+
+    class Meta(MyForm.Meta):
+        property_fields = ['aprop']
 
 
 class LinkForm(ModelForm):
@@ -581,6 +589,15 @@ def test_multipart(request_get):
 
     form = LinkForm()
     assert form.is_multipart()  # has nested form with FileField
+
+
+def test_model_with_property():
+    mything = Thing(fchar='yes')
+    mything.save()
+
+    form = MyFormWithProperty(instance=mything)
+    html = f'{form}'
+    assert 'value="he-yes"' in html
 
 
 def test_render_form_tag(form_cls, request_get):
