@@ -2,6 +2,11 @@ django-siteforms changelog
 ==========================
 
 
+Unreleased
+----------
+* Json subforms serialization improved (support date-related, decimal, uuid fields) (closes #9).
+
+
 v1.0.0 [2023-01-21]
 -------------------
 ! Dropped QA for Python 3.6.

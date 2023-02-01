@@ -1,6 +1,7 @@
 import json
 from typing import Optional
 
+from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import BoundField, Field, ModelChoiceField
 
 from .formsets import BaseFormSet
@@ -40,6 +41,10 @@ class SubformField(EnhancedField):
         self.label = original_field.label
         self.help_text = original_field.help_text
         self.to_python = original_field.to_python
+
+    @classmethod
+    def _json_serialize(cls, value: dict) -> str:
+        return json.dumps(value, cls=DjangoJSONEncoder)
 
     def clean(self, value):
         original_field = self.original_field
@@ -84,6 +89,6 @@ class SubformField(EnhancedField):
         else:
             # For a subform with JSON this `value` contains `cleaned_data` dictionary.
             # We convert this into json to allow parent form field to clean it.
-            value = json.dumps(value)
+            value = self._json_serialize(value)
 
         return original_field.clean(value)

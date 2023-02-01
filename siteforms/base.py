@@ -80,6 +80,8 @@ class SiteformsMixin(BaseForm):
     is_submitted: bool = False
     """Whether this form is submitted and uses th submitted data."""
 
+    _cls_subform_field = SubformField
+
     Composer: Type['FormComposer'] = None
 
     def __init__(
@@ -186,7 +188,7 @@ class SiteformsMixin(BaseForm):
 
             # Use custom field for subforms.
             if subforms.get(field_name):
-                base_fields[field_name] = SubformField(
+                base_fields[field_name] = cls._cls_subform_field(
                     original_field=field,
                     validators=field.validators,
                 )

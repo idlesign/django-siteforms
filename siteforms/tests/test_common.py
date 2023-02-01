@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from django.forms import fields, ModelMultipleChoiceField
 
@@ -431,11 +433,12 @@ def form_cls(form):
 
             first = fields.CharField(label='some', help_text='some help')
             second = fields.ChoiceField(label='variants', choices={'1': 'one', '2': 'two'}.items())
+            th = fields.DateField(label='date', initial=date(2023, 1, 1), required=False)
 
         form_kwargs = dict(
             composer=MyComposer,
             somefield=fields.CharField(),
-            fchar=fields.CharField(max_length=30),
+            fchar=fields.CharField(max_length=100),
             subforms={'fchar': SubForm1},
             model=model,
             fields=use_fields,
@@ -476,25 +479,27 @@ def test_json_subforms(form_cls, request_get, request_post):
 
     # Value is too long for subform field.
     valid, frm = check_source(request_get(
-        'some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=valueistoolong'))
+        'some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=' + ('x' * 300)))
     assert not valid
-    assert 'Ensure this value has at most 30' in f'{frm}'
+    assert 'Ensure this value has at most 100' in f'{frm}'
 
     # All is well.
     valid, frm = check_source(request_get(
         'some?__submit=siteform&somefield=bc&fchar-second=2&fchar-first=op'))
     assert valid
     assert 'field is required' not in f'{frm}'
-    assert frm.cleaned_data == {'fchar': '{"first": "op", "second": "2"}', 'somefield': 'bc'}
+    assert frm.cleaned_data == {'fchar': '{"first": "op", "second": "2", "th": null}', 'somefield': 'bc'}
 
     # With instance.
-    thing = Thing(fchar='{"first": "dum", "second": "2"}', ftext='one')
+    thing = Thing(fchar='{"first": "dum", "second": "2", "th": "2023-01-02"}', ftext='one')
     thing.save()
 
     valid, frm = check_source(request_get('some'), instance=thing)
+    assert not valid
     frm_html = f'{frm}'
     assert 'value="dum"' in frm_html
     assert 'value="2" selected' in frm_html
+    assert 'value="2023-01-02"' in frm_html
 
     # With instance save.
     valid, frm = check_source(request_post(data={
@@ -503,6 +508,7 @@ def test_json_subforms(form_cls, request_get, request_post):
         'ftext': 'two',
         'fchar-second': '1',
         'fchar-first': 'hi',
+        'fchar-th': '2023-01-03',
     }), instance=thing)
 
     assert valid
@@ -510,7 +516,7 @@ def test_json_subforms(form_cls, request_get, request_post):
 
     # get instead of refresh to get brand new objects
     thing = Thing.objects.get(id=thing.id)
-    assert thing.fchar == '{"first": "hi", "second": "1"}'
+    assert thing.fchar == '{"first": "hi", "second": "1", "th": "2023-01-03"}'
     assert thing.ftext == 'two'
 
 
