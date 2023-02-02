@@ -2,8 +2,8 @@ django-siteforms changelog
 ==========================
 
 
-Unreleased
-----------
+v1.1.0 [2023-02-02]
+-------------------
 + Add support for fields for model properties (closes #10).
 * Allow getting 'widgets_readonly' for forms without Meta (closes #8).
 * Json subforms serialization improved (support date-related, decimal, uuid fields) (closes #9).
