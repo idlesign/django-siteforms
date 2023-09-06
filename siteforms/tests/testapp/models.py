@@ -37,6 +37,7 @@ class Thing(models.Model):
     fbool = models.BooleanField(default=False, verbose_name='fbool_name', help_text='fbool_help')
     ftext = models.TextField(verbose_name='ftext_name', help_text='ftext_help')
     ffile = models.FileField(verbose_name='ffile_name')
+    fdate = models.DateField(verbose_name='fdate_name', null=True)
     fforeign = models.ForeignKey(Another, verbose_name='fforeign_name', null=True, on_delete=models.CASCADE)
     fm2m = models.ManyToManyField(Additional, verbose_name='fm2m_name')
 

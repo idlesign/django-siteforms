@@ -545,6 +545,16 @@ class FilteringSiteformsMixin(SiteformsMixin):
 
     """
 
+    lookup_names: Dict[str, str] = {}
+    """Allows setting the ratio of the field in the form to the field in the database.
+    
+    Example::
+        lookup_names = {
+            'date_from': 'date',
+            'date_till': 'date',
+        }
+    """
+
     filtering_fields_optional: TypeDefFieldsAll = '__all__'
     """Fields that should be considered optional for filtering. 
     Use __all__ to describe all fields.
@@ -605,18 +615,12 @@ class FilteringSiteformsMixin(SiteformsMixin):
     def _preprocess_source_data(self, data: Union[dict, QueryDict]) -> Union[dict, QueryDict]:
         data = super()._preprocess_source_data(data)
 
-        if isinstance(data, QueryDict):
-            data = data.dict()
-
         undef_choice_value = self.filtering_choice_undefined_value
 
-        # todo maybe support MultiValueDict
         # drop undefined values beforehand not to mess with them later
-        data = {
-            key: value
-            for key, value in data.items()
-            if value != undef_choice_value
-        }
+        for key, value_list in data.lists():
+            if undef_choice_value in value_list:
+                data.setlist(key, [value for value in value_list if value != undef_choice_value])
 
         return data
 
@@ -640,6 +644,7 @@ class FilteringSiteformsMixin(SiteformsMixin):
 
         filter_kwargs = {}
         rules = self.filtering_rules
+        lookup_names = self.lookup_names
         cleaned_data = self.cleaned_data
 
         for field_name, field in self.fields.items():
@@ -648,7 +653,7 @@ class FilteringSiteformsMixin(SiteformsMixin):
             if cleaned_value in field.empty_values:
                 continue
 
-            lookup_name = field_name
+            lookup_name = lookup_names.get(field_name, field_name)
             rule = rules.get(field_name)
 
             if rule:
