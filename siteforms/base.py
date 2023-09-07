@@ -546,7 +546,7 @@ class FilteringSiteformsMixin(SiteformsMixin):
     """
 
     lookup_names: Dict[str, str] = {}
-    """Allows setting the ratio of the field in the form to the field in the database.
+    """Allows setting the mapping of a field in the form with a field in the database.
     
     Example::
         lookup_names = {
@@ -615,10 +615,16 @@ class FilteringSiteformsMixin(SiteformsMixin):
     def _preprocess_source_data(self, data: Union[dict, QueryDict]) -> Union[dict, QueryDict]:
         data = super()._preprocess_source_data(data)
 
+        if not isinstance(data, MultiValueDict):
+            data = MultiValueDict(data)
+
         undef_choice_value = self.filtering_choice_undefined_value
 
         # drop undefined values beforehand not to mess with them later
         for key, value_list in data.lists():
+            if not isinstance(value_list, list):
+                value_list = [value_list]
+
             if undef_choice_value in value_list:
                 data.setlist(key, [value for value in value_list if value != undef_choice_value])
 
