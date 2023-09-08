@@ -2,6 +2,12 @@ django-siteforms changelog
 ==========================
 
 
+Unreleased
+----------
++ Support filtering of one field with two multiple filters.
++ Support multiple field values for filtering.
+
+
 v1.1.0 [2023-02-02]
 -------------------
 + Add support for fields for model properties (closes #10).

@@ -17,6 +17,21 @@ Use ``FilteringForm`` or ``FilteringModelForm``.
     # We inherit our form from FilteringModelForm.
     class MyFilterForm(FilteringModelForm):
 
+        ...
+
+        # If you have custom form fields, you may want
+        # to map those fields to model field names:
+        lookup_names = {
+            'date_from': 'date',
+            'date_till': 'date',
+        }
+
+        # Or you can have special lookups for certain fields:
+        filtering = {
+            'field1': 'icontains',
+            'field2_json': 'some__gt',
+        }
+
         class Composer(Bootstrap5):  # apply styling as it fits our needs
             opt_form_inline = True
 
