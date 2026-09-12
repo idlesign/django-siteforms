@@ -100,58 +100,12 @@ layout = {
 
 ## Subforms
 
-Sometimes you may want to represent another form as a field of your main form.
+A subform renders another form in place of a parent form field. Depending on the original field,
+`siteforms` can use an inline form for a JSON-encoded value or a foreign key, or a model formset for
+a many-to-many relation.
 
-This can be considered as an alternative to complex widgets.
-
-```python
-from siteforms.composers.bootstrap5 import Bootstrap5
-from siteforms.toolbox import Form, ModelForm, fields
-
-
-class SubForm(Form):
-    """This form we'll include in our main form."""
-
-    class Composer(Bootstrap5):
-
-        opt_render_labels = False
-        opt_placeholder_label = True
-
-    field1 = fields.CharField(label='field1')
-    field2 = fields.ChoiceField(label='field1')
-
-    def get_subform_value(self):
-        """You may override this method to apply value casting.
-        By default it returns the subform's cleaned data dictionary
-        (convenient for JSONField in main form).
-
-        The result of this method becomes the value of the main form field.
-
-        """
-        value = super().get_subform_value()
-        return f"{value['field1']} ----> {value['field2']}"
-
-
-class MyForm(ModelForm):
-    """That would be our main form.
-
-    Let's suppose it has `myfield` field, which value
-    we want to represent in a subform.
-
-    """
-    subforms = {'myfield': SubForm}  # Map field name to subform class.
-
-    class Composer(Bootstrap5):
-
-        opt_columns = True
-
-    class Meta:
-        model = MyModel
-        fields = '__all__'
-```
-
-After a `MyForm` instance is validated with `.is_valid()`, its subform field values are gathered
-using `.get_subform_value()` and placed into the main form's `cleaned_data`.
+See the [Subforms guide](025_subforms/index.md) for complete JSON, foreign-key, many-to-many, and
+nested examples, as well as validation and saving behaviour.
 
 ## Multiple forms
 
