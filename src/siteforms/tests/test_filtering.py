@@ -103,3 +103,45 @@ def test_basics(form, request_get):
     assert len(things_some) == 3
     assert set(things_some) == {thing1, thing2, thing4}
     assert applied
+
+
+def test_initial(request_get):
+
+    thing_initial = Thing.objects.create(fchar='initial', fchoices='one')
+    thing_request = Thing.objects.create(fchar='request', fchoices='two')
+    things = Thing.objects.all()
+
+    class MyForm(FilteringForm):
+
+        fchar = fields.CharField(required=False)
+        fchoices = fields.MultipleChoiceField(required=False, choices=Thing.CHOICES1.items())
+
+        filtering_rules = {
+            'fchoices': 'in',
+        }
+
+        class Composer(FormComposer):
+            ...
+
+    request = request_get('some')
+    form = MyForm(request=request, src='GET', initial={'fchar': 'initial'})
+    things_some, applied = form.filtering_apply(things)
+
+    assert list(things_some) == [thing_initial]
+    assert applied
+    assert not request.GET
+
+    request = request_get('some?filter-fchar=request')
+    form = MyForm(request=request, src='GET', initial={'fchar': 'initial'}, prefix='filter')
+    things_some, applied = form.filtering_apply(things)
+
+    assert list(things_some) == [thing_request]
+    assert applied
+    assert request.GET.dict() == {'filter-fchar': 'request'}
+
+    request = request_get('some')
+    form = MyForm(request=request, src='GET', initial={'fchoices': ['one', 'two']})
+    things_some, applied = form.filtering_apply(things)
+
+    assert set(things_some) == {thing_initial, thing_request}
+    assert applied

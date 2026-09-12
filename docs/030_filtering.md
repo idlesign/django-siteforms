@@ -45,3 +45,16 @@ query_set = Article.objects.all()
 # Now we apply filter to our query set
 listing, filter_applied = filter_form.filtering_apply(query_set)
 ```
+
+Use `initial` to apply default filters when the request does not provide values for them:
+
+```python
+filter_form = MyFilterForm(
+    request=request,
+    src='GET',
+    initial={'status': 'published'},
+)
+```
+
+Values explicitly provided in the request take precedence over `initial`. Field prefixes and
+multiple-value fields are supported.

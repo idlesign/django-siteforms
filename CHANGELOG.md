@@ -4,6 +4,7 @@
 
 * ** Do not duplicate Bootstrap validation feedback in columns mode (closes #12).
 * ** Preserve the Bootstrap 5 inline form method and encoding attributes (closes #13).
+* ++ Allow initial values to be applied by filtering forms (closes #15).
 
 ### v1.2.0 [2023-09-08]
 

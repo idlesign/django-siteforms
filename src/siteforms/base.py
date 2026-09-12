@@ -214,6 +214,14 @@ class SiteformsMixin(BaseForm):
     def _preprocess_source_data(self, data: Union[dict, QueryDict]) -> Union[dict, QueryDict]:
         return data
 
+    def _prepare_source_data(
+            self,
+            data: Union[dict, QueryDict],
+            *,
+            kwargs: dict,
+    ) -> Union[dict, QueryDict]:
+        return data
+
     def _initialize_pre(self, *, args, kwargs):
         # NB: may mutate args and kwargs
 
@@ -232,7 +240,7 @@ class SiteformsMixin(BaseForm):
 
         # Handle user supplied data.
         if src and request:
-            data = getattr(request, src)
+            data = self._prepare_source_data(getattr(request, src), kwargs=kwargs)
             is_submitted = data.get(self.Composer.opt_submit_name, '') == self.submit_marker
 
             self.is_submitted = is_submitted
@@ -629,6 +637,39 @@ class FilteringSiteformsMixin(SiteformsMixin):
 
             if undef_choice_value in value_list:
                 data.setlist(key, [value for value in value_list if value != undef_choice_value])
+
+        return data
+
+    def _prepare_source_data(
+            self,
+            data: Union[dict, QueryDict],
+            *,
+            kwargs: dict,
+    ) -> Union[dict, QueryDict]:
+        data = super()._prepare_source_data(data, kwargs=kwargs)
+        initial = kwargs.get('initial') or {}
+
+        if not initial or self.request.method != self.src:
+            return data
+
+        data = data.copy()
+        prefix = kwargs.get('prefix', self.prefix) or ''
+
+        for field_name, initial_value in initial.items():
+            source_name = f'{prefix}-{field_name}' if prefix else field_name
+            if source_name in data:
+                continue
+
+            field = self.base_fields.get(field_name)
+            if field:
+                initial_value = field.prepare_value(initial_value)
+
+            if isinstance(data, MultiValueDict) and isinstance(initial_value, (list, tuple)):
+                data.setlist(source_name, initial_value)
+            else:
+                data[source_name] = initial_value
+
+        data[self.Composer.opt_submit_name] = self.submit_marker
 
         return data
 
