@@ -124,5 +124,5 @@ If you disable the form wrapper using `render_form_tag=False`, the surrounding t
 responsible for the `<form>` element, CSRF token, and submit control.
 
 Continue with [Core concepts](015_core_concepts.md) for request binding and multiple forms,
-[Advanced](020_advanced.md) for custom layouts, the [Subforms](025_subforms/index.md) guide for
+[Composers](020_composers/index.md) for custom layouts, the [Subforms](025_subforms/index.md) guide for
 structured and related values, or [Filtering Forms](030_filtering.md) to build a queryset filter.
