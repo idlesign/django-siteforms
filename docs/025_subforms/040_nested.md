@@ -48,6 +48,6 @@ validates both nested forms. Calling `save()` propagates saving through the same
 The same mechanism works when the first level is a many-to-many formset. In that case names include
 the formset index, for example `offices-0-country-name`.
 
-If `readonly_fields='__all__'` or `disabled_fields='__all__'` is set on the parent, the state is
-propagated to nested forms. Per-field sets apply only to fields of the form on which they are
-declared.
+If `readonly_fields='__all__'` or `disabled_fields='__all__'` is passed to the parent constructor,
+the state is propagated to nested forms. Class-level settings and per-field sets apply to the form
+class on which they are declared.
