@@ -4,10 +4,9 @@ Use a distinct prefix for each form. The prefix separates field names and become
 submit marker, so only the submitted form is bound.
 
 ```python title="accounts/views.py"
-from django.contrib.auth.forms import SetPasswordForm
 from django.shortcuts import redirect, render
 
-from .forms import ProfileForm
+from .forms import PreferencesForm, ProfileForm
 
 
 def account_settings(request):
@@ -17,29 +16,28 @@ def account_settings(request):
         prefix='profile',
         instance=request.user.profile,
     )
-    password_form = SetPasswordForm(
-        user=request.user,
-        data=request.POST if request.method == 'POST' else None,
-        prefix='password',
+    preferences_form = PreferencesForm(
+        request=request,
+        src='POST',
+        prefix='preferences',
+        instance=request.user.preferences,
     )
 
     if profile_form.is_submitted and profile_form.is_valid():
         profile_form.save()
         return redirect('account-settings')
 
-    password_submitted = request.POST.get('__submit') == 'password'
-    if password_submitted and password_form.is_valid():
-        password_form.save()
+    if preferences_form.is_submitted and preferences_form.is_valid():
+        preferences_form.save()
         return redirect('account-settings')
 
     return render(request, 'accounts/settings.html', {
-        'password_form': password_form,
+        'preferences_form': preferences_form,
         'profile_form': profile_form,
     })
 ```
 
-This example combines a siteforms form with Django's `SetPasswordForm`. The ordinary Django form
-does not generate a siteforms marker, so its button is supplied explicitly:
+Render both forms normally:
 
 ```django title="accounts/templates/accounts/settings.html"
 <section>
@@ -48,19 +46,14 @@ does not generate a siteforms marker, so its button is supplied explicitly:
 </section>
 
 <section>
-  <h2>Password</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ password_form.as_div }}
-    <button type="submit" name="__submit" value="password">
-      Change password
-    </button>
-  </form>
+  <h2>Preferences</h2>
+  {{ preferences_form }}
 </section>
 ```
 
-If both forms inherit from siteforms classes, construct both with `request`, `src='POST'`, and
-different prefixes, then use each form's `is_submitted` flag. Each will render its own complete
-`<form>` element and submit button.
+Each form generates its own `<form>` element and submit button. The profile button submits
+`__submit=profile`, while the preferences button submits `__submit=preferences`. siteforms compares
+that value with the form's `submit_marker` and exposes the result through `is_submitted`; view code
+does not need to inspect `request.POST` itself.
 
 Do not use only `id` to separate forms. It changes HTML IDs, not submitted field names.
