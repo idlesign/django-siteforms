@@ -75,9 +75,7 @@ class Bootstrap5(FormComposer):
             })
 
         if cls.opt_form_inline:
-            cls.attrs.update({
-                FORM: {'class': 'row row-cols-auto align-items-end'},
-            })
+            cls.attrs[FORM]['class'] = 'row row-cols-auto align-items-end'
 
     def _apply_layout(self, *, fld: BoundField, field: str, label: str, hint: str, feedback: str) -> str:
 

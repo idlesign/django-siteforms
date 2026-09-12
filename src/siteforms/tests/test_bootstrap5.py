@@ -63,6 +63,8 @@ def test_bs5_validation(bs5_form_html, request_factory):
 def test_bs5_form_inline(bs5_form_html):
     html = bs5_form_html(dict(opt_form_inline=True))
     assert 'row row-cols-auto' in html
+    assert 'method="POST"' in html
+    assert 'enctype="multipart/form-data"' in html
 
 
 def test_bs5_labels_floating(bs5_form_html):
