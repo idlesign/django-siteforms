@@ -57,3 +57,23 @@ jobs:
       run: |
         uv run coverage run -m pytest
         uv run coveralls --service=github
+
+  docs:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v6
+    - name: Install makeapp
+      run: uv tool install makeapp
+    - name: Initialize project
+      run: |
+        ma tools
+        ma up
+    - name: Build documentation
+      run: ma docs --build
