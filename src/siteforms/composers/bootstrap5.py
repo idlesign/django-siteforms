@@ -94,6 +94,7 @@ class Bootstrap5(FormComposer):
             label = f'<div class="{col_label}">{label}</div>'
             field = f'<div class="{col_control}">{field}{feedback}{hint}</div>'
             hint = ''
+            feedback = ''
 
         return super()._apply_layout(fld=fld, field=field, label=label, hint=hint, feedback=feedback)
 

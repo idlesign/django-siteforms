@@ -56,6 +56,9 @@ def test_bs5_validation(bs5_form_html, request_factory):
     assert 'is-invalid' in html
     assert 'invalid-feedback' in html
 
+    html_columns = bs5_form_html(dict(opt_columns=True), src='GET', request=request)
+    assert html_columns.count('invalid-feedback') == html.count('invalid-feedback')
+
 
 def test_bs5_form_inline(bs5_form_html):
     html = bs5_form_html(dict(opt_form_inline=True))

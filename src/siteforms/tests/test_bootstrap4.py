@@ -78,6 +78,9 @@ def test_bs4_validation(bs4_form_html, request_factory):
     assert 'is-invalid' in html
     assert 'invalid-feedback' in html
 
+    html_columns = bs4_form_html(dict(opt_columns=True), src='GET', request=request)
+    assert html_columns.count('invalid-feedback') == html.count('invalid-feedback')
+
 
 def test_bs4_form_inline(bs4_form_html):
     html = bs4_form_html(dict(opt_form_inline=True))

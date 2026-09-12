@@ -1,5 +1,9 @@
 # django-siteforms changelog
 
+### Unreleased
+
+* ** Do not duplicate Bootstrap validation feedback in columns mode (closes #12).
+
 ### v1.2.0 [2023-09-08]
 
 * ++ Support filtering of one field with two multiple filters.
