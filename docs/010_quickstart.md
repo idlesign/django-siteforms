@@ -123,6 +123,6 @@ form configured with `src='POST'`, `siteforms` adds all three when it receives `
 If you disable the form wrapper using `render_form_tag=False`, the surrounding template becomes
 responsible for the `<form>` element, CSRF token, and submit control.
 
-Continue with [Advanced](020_advanced.md) for custom layouts, the [Subforms](025_subforms/index.md)
-guide for structured and related values, or [Filtering Forms](030_filtering.md) to build a queryset
-filter.
+Continue with [Core concepts](015_core_concepts.md) for request binding and multiple forms,
+[Advanced](020_advanced.md) for custom layouts, the [Subforms](025_subforms/index.md) guide for
+structured and related values, or [Filtering Forms](030_filtering.md) to build a queryset filter.

@@ -40,5 +40,7 @@ Install the package:
 $ python -m pip install django-siteforms
 ```
 
-Continue with the [Quickstart](010_quickstart.md) to create and process a Bootstrap 5 model form.
-The other guides cover composers, subforms, filtering forms, and Bootstrap-specific options.
+Continue with the [Quickstart](010_quickstart.md) to create and process a Bootstrap 5 model form,
+then read [Core concepts](015_core_concepts.md) for request binding, submission markers, multiple
+forms, and rendering options. The other guides cover composers, subforms, filtering forms, and
+Bootstrap-specific options.

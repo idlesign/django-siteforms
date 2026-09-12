@@ -109,14 +109,6 @@ nested examples, as well as validation and saving behaviour.
 
 ## Multiple forms
 
-You may put more than one form from the same view.
-
-Use a unique `prefix` for each form so that their submitted fields do not overlap.
-
-```python
-form1 = MyForm1()
-form2 = MyForm2(prefix='form2')
-form3 = MyForm3(prefix='form3')
-```
-
-Prefix attribute may also be declared in form class.
+Use a unique prefix and the generated submit markers to process multiple forms independently. See
+[Multiple forms on one page](015_core_concepts.md#multiple-forms-on-one-page) for a complete
+example.
