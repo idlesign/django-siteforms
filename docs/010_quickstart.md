@@ -1,109 +1,127 @@
 # Quickstart
 
-Let's show how to build a simple form.
+This guide creates a Bootstrap 5 form for adding an article. The rendered result includes the
+`<form>` element, CSRF token, fields, validation feedback, and submit button.
 
-```python
-from django.shortcuts import render
-from siteforms.composers.bootstrap4 import Bootstrap4
-from siteforms.toolbox import ModelForm, ReadOnlyWidget, fields
+## Installation
+
+Install `django-siteforms` into your Django project:
+
+```shell
+$ python -m pip install django-siteforms
+```
+
+The examples below assume that Bootstrap 5 CSS is already loaded by the base template. The package
+generates Bootstrap-compatible markup but does not bundle Bootstrap assets.
+
+## Model
+
+Start with a regular Django model:
+
+```python title="articles/models.py"
+from django.db import models
 
 
-class MySmileWidget(ReadOnlyWidget):
-    """This one we'd use to render our"""
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    contents = models.TextField()
+```
 
-    def format_value_hook(self, value):
-        return super().format_value_hook(value) + ' %) '
+Create and apply a migration after adding the model:
+
+```shell
+$ python manage.py makemigrations
+$ python manage.py migrate
+```
+
+## Form
+
+Inherit from the `ModelForm` exposed by `siteforms.toolbox` and declare a nested composer. The
+composer controls how the form is rendered; validation and saving still follow Django's regular
+`ModelForm` behaviour.
+
+```python title="articles/forms.py"
+from siteforms.composers.bootstrap5 import Bootstrap5
+from siteforms.toolbox import ModelForm
+
+from .models import Article
 
 
-class MyForm(ModelForm):
-    """This form will show us how siteforms works."""
+class ArticleForm(ModelForm):
 
-    disabled_fields = {'somefield'}
-    """Declarative way of disabling fields. Use __all__ to disable all fields (affects subforms).
-    This can also be passed into __init__() as the keyword-argument with the same name.
+    class Composer(Bootstrap5):
+        opt_submit = 'Save'
 
-    """
-
-    hidden_fields = {'otherfield'}
-    """Declarative way of hiding fields.
-    This can also be passed into __init__() as the keyword-argument with the same name.
-
-    """
-
-    readonly_fields = {'anotherfield'}
-    """Declarative way of making fields readonly (to not to render input fields, but show a value).
-
-    Use __all__ to make all fields readonly (affects subforms).
-    This mode can be useful to make cheap details pages, using the same layout as form.
-
-    This can also be passed into __init__() as the keyword-argument with the same name.
-
-    """
-
-    myprop = fields.CharField(label='from property', required=False)
-    """This field will be populated from model property."""
-
-    class Composer(Bootstrap4):
-        """This will instruct siteforms to compose this
-        form using Bootstrap 4 styling.
-
-        """
     class Meta:
-        model = MyModel  # Suppose you have a model class already.
-
-        # and your model defines 'myprop' property you want
-        # to put into 'myprop' field
-        property_fields = ['myprop']
-
-        fields = '__all__'
-
-        widgets_readonly = {
-            # and here we can define our own widgets for fields
-            # that are rendered as readonly
-            'myfield': MySmileWidget,
-        }
-
-def my_view(request):
-    # Initialize form using data from POST.
-    my_form = MyForm(request=request, src='POST')
-    is_valid = form.is_valid()
-    return render(request, 'mytemplate.html', {'form': my_form})
+        model = Article
+        fields = ['title', 'contents']
 ```
 
-## Composer options
+`Bootstrap5` produces Bootstrap 5 markup. `opt_submit` defines the label of the submit button that
+`siteforms` adds to the rendered form.
 
-Now let's see how to tune our form.
+## View
 
-```python
-from siteforms.composers.bootstrap4 import Bootstrap4, FORM, ALL_FIELDS
+Pass the current request and the data source to the form:
 
-class Composer(Bootstrap4):
+```python title="articles/views.py"
+from django.shortcuts import redirect, render
 
-    opt_size='sm'  # Bootstrap 4 has sizes, so let's make our form small.
+from .forms import ArticleForm
 
-    # Element (fields, groups, form, etc.) attributes are ruled by `attrs`.
-    # Let's add rows=2 to our `contents` model field.
-    # We also add (notice + sign) 'mycss' to an existing 'class' attribute value.
-    attrs={'contents': {'rows': 2, 'class': '+mycss'}}
 
-    # To group fields into named groups describe them in `groups`.
-    groups={
-        'basic': 'Basic attributes',
-        'other': 'Other fields',
-    }
+def article_create(request):
+    form = ArticleForm(request=request, src='POST')
 
-    # We apply custom layout to our form.
-    layout = {
-        FORM: {
-            'basic': [  # First we place `basic` group.
-                # The following three fields are in the same row -
-                # two fields in the right column are stacked.
-                ['title', ['date_created',
-                           'date_updated']],
-                'contents',  # This one field goes into a separate row.
-            ],
-            # We place all the rest fields into `other` group.
-            'other': ALL_FIELDS,
-        }
-    }
+    if form.is_submitted and form.is_valid():
+        article = form.save()
+        return redirect('article-detail', pk=article.pk)
+
+    return render(request, 'articles/create.html', {'form': form})
 ```
+
+On a GET request the form remains unbound. On a POST request, `siteforms` uses its generated submit
+button to determine whether this particular form was submitted and exposes the result through
+`is_submitted`. Once submitted, `is_valid()` and `save()` behave like their Django counterparts.
+
+Using `is_submitted` rather than only checking `request.method` matters when a page contains more
+than one form.
+
+## URL
+
+Connect the view using Django's URL dispatcher:
+
+```python title="articles/urls.py"
+from django.urls import path
+
+from .views import article_create
+
+
+urlpatterns = [
+    path('new/', article_create, name='article-create'),
+]
+```
+
+## Template
+
+Render the form variable directly:
+
+```django title="articles/templates/articles/create.html"
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container py-4">
+    <h1>Add article</h1>
+    {{ form }}
+  </div>
+{% endblock %}
+```
+
+There is no need to add `{% csrf_token %}`, `<form>`, or a submit button in this template. For a
+form configured with `src='POST'`, `siteforms` adds all three when it receives `request`.
+
+If you disable the form wrapper using `render_form_tag=False`, the surrounding template becomes
+responsible for the `<form>` element, CSRF token, and submit control.
+
+Continue with [Advanced](020_advanced.md) for custom layouts and subforms, or with
+[Filtering Forms](030_filtering.md) to build a queryset filter.

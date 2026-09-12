@@ -31,43 +31,60 @@ Supported styling:
 
 ## Usage
 
-To render a form in templates just address a variable, e.g. `<div>{{ form }}</div>`.
+Install the package:
+
+```shell
+$ python -m pip install django-siteforms
+```
+
+To render a form in a template, output the form variable, e.g. `<div>{{ form }}</div>`.
 
 !!! note
-    By default there's no need to add a submit button and wrap it all into `<form>`.
+    By default there is no need to add a submit button, a CSRF token, or a `<form>` wrapper.
+    `siteforms` renders them automatically when the form receives the request and uses `POST` as
+    its data source.
 
 ### Basic
 
 Let's show how to build a simple form.
 
 ```python
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from siteforms.composers.bootstrap5 import Bootstrap5
 from siteforms.toolbox import ModelForm
 
+from .models import Article
 
-class MyForm(ModelForm):
-    """This form will show us how siteforms works."""
 
-    disabled_fields = {'somefield'}  # Declarative way of disabling fields.
-    hidden_fields = {'otherfield'}  # Declarative way of hiding fields.
-    readonly_fields = {'anotherfield'}  # Declarative way of making fields readonly.
+class ArticleForm(ModelForm):
 
     class Composer(Bootstrap5):
-        """This will instruct siteforms to compose this
-        form using Bootstrap 5 styling.
+        opt_submit = 'Save'
 
-        """
     class Meta:
-        model = MyModel  # Suppose you have a model class already.
-        fields = '__all__'
+        model = Article
+        fields = ['title', 'contents']
 
-def my_view(request):
-    # Initialize form using data from POST.
-    my_form = MyForm(request=request, src='POST')
-    is_valid = form.is_valid()
-    return render(request, 'mytemplate.html', {'form': my_form})
+
+def article_create(request):
+    form = ArticleForm(request=request, src='POST')
+    if form.is_submitted and form.is_valid():
+        article = form.save()
+        return redirect('article-detail', pk=article.pk)
+
+    return render(request, 'articles/create.html', {'form': form})
 ```
+
+The template only needs to render the form:
+
+```django
+<div class="container">
+  {{ form }}
+</div>
+```
+
+See the [Quickstart](https://django-siteforms.readthedocs.io/en/latest/010_quickstart/) for a
+complete example.
 
 ### Composer options
 
@@ -76,16 +93,17 @@ Now let's see how to tune our form.
 ```python
 from siteforms.composers.bootstrap5 import Bootstrap5, FORM, ALL_FIELDS
 
+
 class Composer(Bootstrap5):
 
-    opt_size='sm'  # Bootstrap 5 has sizes, so let's make our form small.
+    opt_size = 'sm'  # Bootstrap 5 has sizes, so let's make our form small.
 
     # Element (fields, groups, form, etc.) attributes are ruled by `attrs`.
     # Let's add rows=2 to our `contents` model field.
-    attrs={'contents': {'rows': 2}}
+    attrs = {'contents': {'rows': 2}}
 
     # To group fields into named groups describe them in `groups`.
-    groups={
+    groups = {
         'basic': 'Basic attributes',
         'other': 'Other fields',
     }
@@ -130,6 +148,7 @@ Check code style and run tests before your pull request:
 ```shell
 $ ma style
 $ ma tests
+$ ma docs --build
 ```
 
 ## Documentation

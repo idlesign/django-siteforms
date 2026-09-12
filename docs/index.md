@@ -31,3 +31,14 @@ Supported styling:
 
 1. Python 3.10+
 2. Django 3.2+
+
+## Getting started
+
+Install the package:
+
+```shell
+$ python -m pip install django-siteforms
+```
+
+Continue with the [Quickstart](010_quickstart.md) to create and process a Bootstrap 5 model form.
+The other guides cover composers, subforms, filtering forms, and Bootstrap-specific options.

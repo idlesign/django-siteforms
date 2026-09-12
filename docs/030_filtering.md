@@ -1,6 +1,6 @@
 # Filtering Forms
 
-`siteforms` allows you to use form a filter applied to a query set.
+`siteforms` allows you to use a form as a filter applied to a queryset.
 
 Use `FilteringForm` or `FilteringModelForm`.
 
@@ -25,7 +25,7 @@ class MyFilterForm(FilteringModelForm):
     }
 
     # Or you can have special lookups for certain fields:
-    filtering = {
+    filtering_rules = {
         'field1': 'icontains',
         'field2_json': 'some__gt',
     }

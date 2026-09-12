@@ -1,8 +1,10 @@
 # Advanced
 
-`Composers` allows declarative configuration with the help of class attributes which should be enough for many simple cases.
+Composers allow declarative configuration through class attributes, which is enough for many
+common cases.
 
-Just inherit from your composer from base composer class and set attributes and options you want to override.
+Inherit a nested composer from the required base composer and override the attributes and options
+you need.
 
 ```python
 from siteforms.composers.bootstrap5 import Bootstrap5
@@ -42,9 +44,9 @@ class Composer(Bootstrap5):
 - `opt_submit` - Submit button text. If not set, submit button won't be added into this form.
 - `opt_submit_name` - Submit button name.
 
-## Macroses
+## Macros
 
-Macroses are a quick way to address various objects.
+Macros are a quick way to address various objects.
 
 They can be used as keys in `Attributes` (see above).
 
@@ -56,7 +58,8 @@ They can be used as keys in `Attributes` (see above).
 
 ## ALL_FIELDS in Layout
 
-`ALL_FIELDS` macros can be used in many places in layout. It expands into rows for each field which has not been addressed so far.
+The `ALL_FIELDS` macro can be used in many places in a layout. It expands into rows for each field
+that has not been addressed yet.
 
 ### As layout value
 
@@ -97,13 +100,14 @@ layout = {
 
 ## Subforms
 
-Sometimes you may want to represent an entire other form as a field of you main form.
+Sometimes you may want to represent another form as a field of your main form.
 
 This can be considered as an alternative to complex widgets.
 
 ```python
 from siteforms.composers.bootstrap5 import Bootstrap5
-from siteforms.toolbox import ModelForm, Form
+from siteforms.toolbox import Form, ModelForm, fields
+
 
 class SubForm(Form):
     """This form we'll include in our main form."""
@@ -118,14 +122,15 @@ class SubForm(Form):
 
     def get_subform_value(self):
         """You may override this method to apply value casting.
-        Be default it returns subform's cleaned data dictionary
+        By default it returns the subform's cleaned data dictionary
         (convenient for JSONField in main form).
 
-        The result of this method would became the value of main form field.
+        The result of this method becomes the value of the main form field.
 
         """
         value = super().get_subform_value()
         return f"{value['field1']} ----> {value['field2']}"
+
 
 class MyForm(ModelForm):
     """That would be our main form.
@@ -138,20 +143,21 @@ class MyForm(ModelForm):
 
     class Composer(Bootstrap5):
 
-        opt_columns =  True
+        opt_columns = True
 
     class Meta:
         model = MyModel
         fields = '__all__'
 ```
 
-After MyForm instance is validated (`.is_valid()`), subform fields values are gathered (see `.get_subform_value()`) and placed into main form `cleaned_data`.
+After a `MyForm` instance is validated with `.is_valid()`, its subform field values are gathered
+using `.get_subform_value()` and placed into the main form's `cleaned_data`.
 
 ## Multiple forms
 
 You may put more than one form from the same view.
 
-For that to wok properly please use `prefix` for your forms.
+Use a unique `prefix` for each form so that their submitted fields do not overlap.
 
 ```python
 form1 = MyForm1()
