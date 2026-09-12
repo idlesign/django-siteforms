@@ -545,7 +545,7 @@ class FilteringSiteformsMixin(SiteformsMixin):
     """Allows setting rules (instructions) to use this form for queryset filtering.
 
     Example::
-        filtering = {
+        filtering_rules = {
             # for these fields we use special lookups
             'field1': 'icontains',
             'field2_json_sub': 'sub__gt',
@@ -675,7 +675,7 @@ class FilteringSiteformsMixin(SiteformsMixin):
 
     def filtering_apply(self, queryset: QuerySet) -> Tuple[QuerySet, bool]:
         """Applies filtering to the queryset using user-submitted
-        data cleaned by this form and filtering instructions (see .filtering) if any.
+        data cleaned by this form and filtering instructions (see .filtering_rules) if any.
 
         Returns a tuple of a query set and boolean:
 

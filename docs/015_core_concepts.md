@@ -52,7 +52,7 @@ Automatic binding occurs only when the selected source contains this form's subm
 its initial GET response.
 
 `src='GET'` is primarily useful for filtering and search forms. See
-[Filtering Forms](030_filtering.md) for the filtering-specific workflow.
+[Filtering Forms](030_filtering/index.md) for the filtering-specific workflow.
 
 ## Submission markers
 
