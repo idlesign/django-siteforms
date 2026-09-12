@@ -57,6 +57,7 @@ Bootstrap composers add options for:
 - Bootstrap 5 floating labels;
 - Bootstrap 4 custom controls.
 
-See [Bootstrap 5](../050_bs5.md) and [Bootstrap 4](../040_bs4.md) for the options supported by
-each composer. The [Composer API](050_api.md) contains the definitions and defaults sourced from
-the implementation through `apidescribed`.
+See [Bootstrap 5](../040_bootstrap/010_bootstrap5.md) and
+[Bootstrap 4](../040_bootstrap/020_bootstrap4.md) for the options supported by each composer. The
+[Composer API](050_api.md) contains the definitions and defaults sourced from the implementation
+through `apidescribed`.
