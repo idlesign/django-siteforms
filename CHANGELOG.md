@@ -1,8 +1,7 @@
 # django-siteforms changelog
 
-### Unreleased
+### v1.3.0 [2026-09-12]
 * ++ Allow initial values to be applied by filtering forms (closes #15).
-
 * ** Do not duplicate Bootstrap validation feedback in columns mode (closes #12).
 * ** Preserve the Bootstrap 5 inline form method and encoding attributes (closes #13).
 
