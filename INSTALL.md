@@ -1,31 +1,25 @@
-django-siteforms installation
-=============================
+# django-siteforms installation
 
+Python `pip` package is required to install `django-siteforms`.
 
-Python ``pip`` package is required to install ``django-siteforms``.
+## From sources
 
+Use the following command line to install `django-siteforms` from sources directory (containing `pyproject.toml`):
 
-From sources
-------------
+```shell
+pip install .
+```
 
-Use the following command line to install ``django-siteforms`` from sources directory (containing setup.py):
+## From PyPI
 
-    pip install .
+Alternatively you can install `django-siteforms` from PyPI:
 
-or
-
-    python setup.py install
-
-
-From PyPI
----------
-
-Alternatively you can install ``django-siteforms`` from PyPI:
-
-    pip install django-siteforms
-
+```shell
+pip install django-siteforms
+```
 
 Use `-U` flag for upgrade:
 
-    pip install -U django-siteforms
-
+```shell
+pip install -U django-siteforms
+```

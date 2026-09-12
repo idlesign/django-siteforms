@@ -1,18 +1,11 @@
-django-siteforms authors
-========================
+# django-siteforms authors
 
-Created by Igor `idle sign` Starikov.
+Created by Igor <span class="title-ref">idle sign</span> Starikov.
 
+## Contributors
 
-Contributors
-------------
+Andrey Tremasov \<<https://github.com/questonit>\>
 
-Andrey Tremasov <https://github.com/questonit>
-
-
-
-Translators
------------
+## Translators
 
 Here could be your name.
-

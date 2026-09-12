@@ -16,9 +16,9 @@ class SubformWidget(Widget):
     """Widget representing a subform"""
 
     form: Optional['TypeSubform'] = None
-    """Subform or a formset for which the widget is used. 
+    """Subform or a formset for which the widget is used.
     Bound runtime by .get_subform().
-    
+
     """
 
     bound_field: Optional['EnhancedBoundField'] = None

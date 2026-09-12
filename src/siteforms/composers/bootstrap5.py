@@ -18,7 +18,7 @@ class Bootstrap5(FormComposer):
     """Make form inline."""
 
     opt_columns: Union[bool, Tuple[str, str]] = False
-    """Enabled two-columns mode. 
+    """Enabled two-columns mode.
 
     Expects a columns tuple: (label_columns_count, control_columns_count).
 

@@ -37,27 +37,27 @@ class SiteformsMixin(BaseForm):
 
     disabled_fields: TypeDefFieldsAll = None
     """Fields to be disabled. Use __all__ to disable all fields (affects subforms).
-    
+
     .. note:: This can also be passed into __init__() as the keyword-argument
         with the same name.
-    
+
     """
 
     hidden_fields: Set[str] = None
     """Fields to be hidden.
-    
+
     .. note:: This can also be passed into __init__() as the keyword-argument
         with the same name.
-    
+
     """
 
     readonly_fields: TypeDefFieldsAll = None
     """Fields to make read-only. Use __all__ to disable all fields (affects subforms).
     Readonly fields are disabled automatically to prevent data corruption.
-    
+
     .. note:: This can also be passed into __init__() as the keyword-argument
         with the same name.
-    
+
     """
 
     subforms: TypeDefSubforms = None
@@ -65,7 +65,7 @@ class SiteformsMixin(BaseForm):
 
     formset_kwargs: dict = None
     """These kwargs are passed into formsets factory (see `formset_factory()`).
-    
+
     Example::
         {
             'subformfield1': {'extra': 2},
@@ -74,7 +74,7 @@ class SiteformsMixin(BaseForm):
 
     .. note:: This can also be passed into __init__() as the keyword-argument
         with the same name.
-    
+
     """
 
     is_submitted: bool = False
@@ -547,7 +547,7 @@ class FilteringSiteformsMixin(SiteformsMixin):
 
     lookup_names: Dict[str, str] = {}
     """Allows setting the mapping of a field in the form with a field in the database.
-    
+
     Example::
         lookup_names = {
             'date_from': 'date',
@@ -556,13 +556,13 @@ class FilteringSiteformsMixin(SiteformsMixin):
     """
 
     filtering_fields_optional: TypeDefFieldsAll = '__all__'
-    """Fields that should be considered optional for filtering. 
+    """Fields that should be considered optional for filtering.
     Use __all__ to describe all fields.
 
     """
 
     filtering_fields_choice_undefined: TypeDefFieldsAll = '__all__'
-    """Fields with choices that should include an <undefined> item for filtering. 
+    """Fields with choices that should include an <undefined> item for filtering.
     Use __all__ to describe all fields.
 
     """
@@ -608,7 +608,9 @@ class FilteringSiteformsMixin(SiteformsMixin):
 
             if hasattr(field, 'choices') and (fields_choice_undef == all_macro or field_name in fields_choice_undef):
                 field.initial = field.initial or undef_choice_value
-                field.widget.choices.insert(0, (undef_choice_value, undef_choice_title))
+                choices = list(field.widget.choices)
+                choices.insert(0, (undef_choice_value, undef_choice_title))
+                field.widget.choices = choices
 
             field._fltpatched = True
 

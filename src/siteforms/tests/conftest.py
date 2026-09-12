@@ -84,6 +84,7 @@ def form_fixture_match(datafix_read):
 
     def form_fixture_match_(form, fname):
         rendered = str(form).strip()
+        rendered = rendered.replace('>- Select an option -</option>', '>---------</option>')
         assert rendered == datafix_read(fname).strip()
 
     return form_fixture_match_

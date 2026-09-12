@@ -54,7 +54,7 @@ class FormatDict(dict):
 
 class FormComposer:
     """Base form composer."""
-    
+
     opt_render_form_tag: bool = True
     """Render form tag."""
 
@@ -104,9 +104,9 @@ class FormComposer:
 
     attrs_feedback: TypeAttrs = None
     """Attributes to apply to feedback (validation notes).
-    
+
     FORM macros here denotes global (non-field) form feedback attrs.
-    
+
     """
 
     groups: Dict[str, str] = None
@@ -279,7 +279,17 @@ class FormComposer:
                 elif title_help:
                     attrs['title'] = field.help_text
 
-        out = field.as_widget(attrs=attrs)
+        help_text = field.help_text
+        if not self.opt_render_help:
+            # Django 6.0+ adds aria-describedby for help text automatically.
+            # Siteforms renders help and its ARIA link itself, so suppress the
+            # framework-generated attribute when help rendering is disabled.
+            field.help_text = ''
+
+        try:
+            out = field.as_widget(attrs=attrs)
+        finally:
+            field.help_text = help_text
 
         if field.field.show_hidden_initial:
             out += field.as_hidden(only_initial=True)

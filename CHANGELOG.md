@@ -1,105 +1,92 @@
-django-siteforms changelog
-==========================
+# django-siteforms changelog
 
+### v1.2.0 [2023-09-08]
 
-v1.2.0 [2023-09-08]
--------------------
-+ Support filtering of one field with two multiple filters.
-+ Support multiple field values for filtering.
+* ++ Support filtering of one field with two multiple filters.
+* ++ Support multiple field values for filtering.
 
+### v1.1.0 [2023-02-02]
 
-v1.1.0 [2023-02-02]
--------------------
-+ Add support for fields for model properties (closes #10).
-* Allow getting 'widgets_readonly' for forms without Meta (closes #8).
-* Json subforms serialization improved (support date-related, decimal, uuid fields) (closes #9).
-* Now forms handle both data/files given in args/kwargs and fetched from 'request'+'src' (closes #11).
+* ++ Add support for fields for model properties (closes #10).
+* ** Allow getting 'widgets_readonly' for forms without Meta (closes #8).
+* ** Json subforms serialization improved (support date-related, decimal, uuid fields) (closes #9).
+* ** Now forms handle both data/files given in args/kwargs and fetched from 'request'+'src' (closes #11).
 
+### v1.0.0 [2023-01-21]
 
-v1.0.0 [2023-01-21]
--------------------
-! Dropped QA for Python 3.6.
-+ Add 'opt_feedback_valid' for Bootstrap 4, 5 (closes #6).
-+ Add 'target_url' form parameter (closes #7).
-+ Add basic support for filtering forms (closes #5).
-+ Add support for Bootstrap 5 (closes #4).
-* Do not leak CSRF token for GET (closes #3).
-* Rename SubformBoundField -> EnhancedBoundField.
+* !! Dropped QA for Python 3.6.
+* ++ Add 'opt_feedback_valid' for Bootstrap 4, 5 (closes #6).
+* ++ Add 'target_url' form parameter (closes #7).
+* ++ Add basic support for filtering forms (closes #5).
+* ++ Add support for Bootstrap 5 (closes #4).
+* ** Do not leak CSRF token for GET (closes #3).
+* ** Rename SubformBoundField -> EnhancedBoundField.
 
+### v0.9.1 [2021-12-18]
 
-v0.9.1 [2021-12-18]
--------------------
-* Django 4.0 compatibility improved.
+* ** Django 4.0 compatibility improved.
 
+### v0.9.0 [2021-10-13]
 
-v0.9.0 [2021-10-13]
--------------------
-+ Added support for append operation for attrs.
-+ Added support for Form.Meta.widgets_readonly.
+* ++ Added support for append operation for attrs.
+* ++ Added support for Form.Meta.widgets_readonly.
 
+### v0.8.0 [2021-09-24]
 
-v0.8.0 [2021-09-24]
--------------------
-+ ReadOnlyWidget now can represent ModelMultipleChoiceField.
-* Add hidden fields for custom layout without ALL_FIELDS.
-* Fix 'render_form_tag' handling for Bootstrap 4.
-* Improved disable, readonly and hidden fields handling.
-* Improved multipart form detection and files passing to subforms.
+* ++ ReadOnlyWidget now can represent ModelMultipleChoiceField.
+* ** Add hidden fields for custom layout without ALL_FIELDS.
+* ** Fix 'render_form_tag' handling for Bootstrap 4.
+* ** Improved disable, readonly and hidden fields handling.
+* ** Improved multipart form detection and files passing to subforms.
 
+### v0.7.0 [2021-09-19]
 
-v0.7.0 [2021-09-19]
--------------------
-! 'Composer.opt_render_form' was renamed into '.opt_render_form_tag'.
-+ 'ReadOnlyWidget' now can deal with 'BooleanField'.
-+ Added 'render_form_tag' form argument.
-* Fixed subforms rendering when 'readonly_fields' form argument is used.
+* !! 'Composer.opt_render_form' was renamed into '.opt_render_form_tag'.
+* ++ 'ReadOnlyWidget' now can deal with 'BooleanField'.
+* ++ Added 'render_form_tag' form argument.
+* ** Fixed subforms rendering when 'readonly_fields' form argument is used.
 
+### v0.6.0 [2021-09-06]
 
-v0.6.0 [2021-09-06]
--------------------
-+ Now nested form items (FK, M2M) can be initialized automatically.
-+ ReadOnlyWidget. Customizability improved.
-+ ReadOnlyWidget. Now can efficiently handle Foreign Keys.
-+ ReadOnlyWidget. Now can handle missing choices.
+* ++ Now nested form items (FK, M2M) can be initialized automatically.
+* ++ ReadOnlyWidget. Customizability improved.
+* ++ ReadOnlyWidget. Now can efficiently handle Foreign Keys.
+* ++ ReadOnlyWidget. Now can handle missing choices.
 
+### v0.5.0 [2021-08-29]
 
-v0.5.0 [2021-08-29]
--------------------
-+ Added basic formset support (many-to-many).
-+ Added support for '__all__' in 'disabled_fields'.
-+ Added support for 'opt_title_label' and 'opt_title_help' Composer options.
-+ Added support for 'readonly_fields' in forms.
-+ Added support for deeply nested forms.
-+ Added support for FK models as subforms.
-+ Form widgets now have 'bound_field' attribute to allow complex widgets rendering.
-+ Layout. Added support for field stacking.
+* ++ Added basic formset support (many-to-many).
+* ++ Added support for '__all__' in 'disabled_fields'.
+* ++ Added support for 'opt_title_label' and 'opt_title_help' Composer options.
+* ++ Added support for 'readonly_fields' in forms.
+* ++ Added support for deeply nested forms.
+* ++ Added support for FK models as subforms.
+* ++ Form widgets now have 'bound_field' attribute to allow complex widgets rendering.
+* ++ Layout. Added support for field stacking.
 
-v0.4.0 [2020-12-26]
--------------------
-+ Add Russian locale.
-+ Add shortcut for setting form ID and fields ID prefix.
+### v0.4.0 [2020-12-26]
 
+* ++ Add Russian locale.
+* ++ Add shortcut for setting form ID and fields ID prefix.
 
-v0.3.0 [2020-05-19]
--------------------
-+ Added support for multiple forms handled by the same view.
-+ Added support for non-field errors.
-+ Now showing hidden fields errors in non-field area.
-+ Subform fields errors is now rendered in non-field area.
+### v0.3.0 [2020-05-19]
 
+* ++ Added support for multiple forms handled by the same view.
+* ++ Added support for non-field errors.
+* ++ Now showing hidden fields errors in non-field area.
+* ++ Subform fields errors is now rendered in non-field area.
 
-v0.2.0 [2020-05-18]
--------------------
-+ Added automatic files handling.
-+ Added basic support for subforms.
-+ Added support for 'ALL_FIELDS' as group row.
-+ Allow groups without titles.
-+ Bootstrap 4. Auto layout in rows.
-+ Form data populated only if request method matches.
-* Exposed 'toolbox.Form'.
-* Fixed 'disabled_fields' and 'hidden_fields' setting declaratively.
+### v0.2.0 [2020-05-18]
 
+* ++ Added automatic files handling.
+* ++ Added basic support for subforms.
+* ++ Added support for 'ALL_FIELDS' as group row.
+* ++ Allow groups without titles.
+* ++ Bootstrap 4. Auto layout in rows.
+* ++ Form data populated only if request method matches.
+* ** Exposed 'toolbox.Form'.
+* ** Fixed 'disabled_fields' and 'hidden_fields' setting declaratively.
 
-v0.1.0 [2020-05-13]
--------------------
-+ Basic functionality.
+### v0.1.0 [2020-05-13]
+
+* ++ Basic functionality.
