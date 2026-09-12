@@ -52,7 +52,7 @@ class SiteformsMixin(BaseForm):
     """
 
     readonly_fields: TypeDefFieldsAll = None
-    """Fields to make read-only. Use __all__ to disable all fields (affects subforms).
+    """Fields to make read-only. Use __all__ to make all fields read-only (affects subforms).
     Readonly fields are disabled automatically to prevent data corruption.
 
     .. note:: This can also be passed into __init__() as the keyword-argument
@@ -66,10 +66,10 @@ class SiteformsMixin(BaseForm):
     formset_kwargs: dict = None
     """These kwargs are passed into formsets factory (see `formset_factory()`).
 
-    Example::
+        Example::
         {
             'subformfield1': {'extra': 2},
-            'subformfield1': {'validate_max': True, 'min_num': 2},
+            'subformfield2': {'validate_max': True, 'max_num': 2},
         }
 
     .. note:: This can also be passed into __init__() as the keyword-argument
@@ -78,7 +78,7 @@ class SiteformsMixin(BaseForm):
     """
 
     is_submitted: bool = False
-    """Whether this form is submitted and uses th submitted data."""
+    """Whether this form was submitted and uses submitted request data."""
 
     _cls_subform_field = SubformField
 
@@ -101,7 +101,7 @@ class SiteformsMixin(BaseForm):
     ):
         """
 
-        :param args:
+        :param args: Positional arguments passed to the base Django form.
 
         :param request: Django request object.
 
@@ -115,11 +115,11 @@ class SiteformsMixin(BaseForm):
 
         :param parent: Parent form for a subform.
 
-        :param hidden_fields: See the class attribute docstring.
+        :param hidden_fields: Field names to render with hidden widgets.
 
-        :param formset_kwargs: See the class attribute docstring.
+        :param formset_kwargs: Options passed to model formset factories, keyed by subform name.
 
-        :param subforms: See the class attribute docstring.
+        :param subforms: Mapping of parent field names to subform classes.
 
         :param submit_marker: A value that should be used to detect
             whether the form was submitted.
@@ -128,8 +128,7 @@ class SiteformsMixin(BaseForm):
             Useful in conjunction with `readonly_fields='__all__` to make read-only details pages
             using form layout.
 
-        :param kwargs: Form arguments to pass to the base
-            class of this form and also to subforms.
+        :param kwargs: Form arguments passed to the base form and registered subforms.
 
         """
         self.src = src
@@ -286,10 +285,9 @@ class SiteformsMixin(BaseForm):
             self._subforms_kwargs = subforms_kwargs
 
     def get_subform(self, *, name: str) -> TypeSubform:
-        """Returns a subform instance by its name
-        (or possibly a name of a nested subform field, representing a form).
+        """Returns a subform or formset instance by its registered field name.
 
-        :param name:
+        :param name: Registered parent field name.
 
         """
         prefix = self.prefix
@@ -432,14 +430,14 @@ class SiteformsMixin(BaseForm):
         return valid
 
     def get_composer(self) -> 'TypeComposer':
-        """Spawns a form composer object.
-        Hook method. May be reimplemented by a subclass
-        for a further composer modification.
+        """Creates the configured form composer.
+
+        Subclasses may override this hook to customize a composer for a form instance.
         """
         return self.Composer(self)
 
     def render(self, template_name=None, context=None, renderer=None):
-        """Renders this form as a string."""
+        """Renders this form using its composer or an explicitly requested Django template."""
 
         if template_name:
             # Use Django 4.0+ default implementation to avoid recursion.
@@ -674,18 +672,12 @@ class FilteringSiteformsMixin(SiteformsMixin):
         return data
 
     def filtering_apply(self, queryset: QuerySet) -> Tuple[QuerySet, bool]:
-        """Applies filtering to the queryset using user-submitted
-        data cleaned by this form and filtering instructions (see .filtering_rules) if any.
+        """Applies cleaned form values and filtering rules to a queryset.
 
-        Returns a tuple of a query set and boolean:
+        Returns the original queryset and ``False`` when the form is invalid. Otherwise returns a
+        filtered queryset and a boolean indicating whether any non-empty filter was applied.
 
-            * QuerySet
-                * Returns a new filtered queryset if form data is valid.
-                * If user input is invalid (form is not valid) returns initial queryset.
-
-            * Returns True if filters were applied to a query set.
-
-        :param queryset:
+        :param queryset: Base Django queryset to filter.
 
         """
         if not self.is_valid():

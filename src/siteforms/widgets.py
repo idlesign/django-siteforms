@@ -13,16 +13,17 @@ if False:  # pragma: nocover
 
 
 class SubformWidget(Widget):
-    """Widget representing a subform"""
+    """Widget that renders a registered subform in place of a field control."""
 
     form: Optional['TypeSubform'] = None
-    """Subform or a formset for which the widget is used.
-    Bound runtime by .get_subform().
+    """Subform or formset rendered by this widget.
+
+    Bound at runtime by ``get_subform()``.
 
     """
 
     bound_field: Optional['EnhancedBoundField'] = None
-    """Bound runtime by SubformBoundField when a widget is get."""
+    """Bound field assigned when the widget is rendered."""
 
     def render(self, name, value, attrs=None, renderer=None):
         # Call form render, or a formset render, or a formset form renderer.
@@ -38,8 +39,9 @@ class SubformWidget(Widget):
 
 
 class ReadOnlyWidget(Widget):
-    """Can be used to swap form input element with a field value.
-    Useful to make cheap entity details pages by a simple reuse of forms from entity edit pages.
+    """Replaces an input element with a formatted field value.
+
+    Useful for detail pages that reuse forms and layouts from edit views.
 
     """
     template_name = ''
@@ -56,10 +58,11 @@ class ReadOnlyWidget(Widget):
         self.original_widget = original_widget
 
     def get_multiple_items(self, value: Optional[Manager]) -> List[Model]:
-        """Allows customization of results for ModelMultipleChoiceField
-        (e.g. .select_related).
+        """Returns items displayed for a ``ModelMultipleChoiceField``.
 
-        :param value:
+        Override this to customize the related queryset, for example with ``select_related()``.
+
+        :param value: Related manager from the model instance.
 
         """
         if value is None:
@@ -67,7 +70,7 @@ class ReadOnlyWidget(Widget):
         return list(value.all())
 
     def format_value_hook(self, value: Any):
-        """Allows format value customization right before it's formatted by base format function."""
+        """Customizes a value after field-specific formatting and before final widget formatting."""
         return value
 
     def format_value(self, value):
