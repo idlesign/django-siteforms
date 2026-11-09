@@ -69,11 +69,7 @@ jobs:
         python-version: "3.12"
     - name: Setup uv
       uses: astral-sh/setup-uv@v6
-    - name: Install makeapp
-      run: uv tool install makeapp
-    - name: Initialize project
-      run: |
-        ma tools
-        ma up
+    - name: Install deps
+      run: uv sync --only-group docs
     - name: Build documentation
-      run: ma docs --build
+      run: uv run mkdocs build
