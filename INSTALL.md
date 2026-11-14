@@ -1,25 +1,29 @@
 # django-siteforms installation
 
-Python `pip` package is required to install `django-siteforms`.
-
-## From sources
-
-Use the following command line to install `django-siteforms` from sources directory (containing `pyproject.toml`):
-
-```shell
-pip install .
-```
+[uv](https://docs.astral.sh/uv/) is recommended for installation, though plain `pip` works too.
 
 ## From PyPI
 
-Alternatively you can install `django-siteforms` from PyPI:
+Add the package to a project:
 
-```shell
+```bash
+uv add django-siteforms
+```
+
+or with pip:
+
+```bash
 pip install django-siteforms
 ```
 
-Use `-U` flag for upgrade:
+## From source
 
-```shell
-pip install -U django-siteforms
+Clone the repository and synchronize its development environment:
+
+```bash
+git clone https://github.com/idlesign/django-siteforms django-siteforms
+cd django-siteforms
+uv sync
 ```
+
+Run commands in the project environment with `uv run`.

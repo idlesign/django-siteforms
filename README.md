@@ -57,23 +57,3 @@ Then render it directly:
 The output includes the `<form>` wrapper, CSRF token, fields, and submit button. Start with the
 [Quickstart](https://django-siteforms.readthedocs.io/en/latest/010_quickstart/) and continue with
 the [full documentation](https://django-siteforms.readthedocs.io/).
-
-## Development
-
-Development tasks are provided by [makeapp](https://pypi.org/project/makeapp/). After cloning the
-repository, install or update it and initialize the project:
-
-```shell
-$ uv tool install makeapp
-# or: uv tool upgrade makeapp
-$ ma tools
-$ ma up
-```
-
-Run the same project checks before submitting a pull request:
-
-```shell
-$ ma style
-$ ma tests
-$ ma docs --build
-```
