@@ -23,7 +23,8 @@ Choose a base composer according to the desired output:
 
 - `FormComposer` from `siteforms.composers.base` for markup without a CSS framework;
 - `Bootstrap5` for Bootstrap 5;
-- `Bootstrap4` for Bootstrap 4.
+- `Bootstrap4` for Bootstrap 4;
+- `Daisyui` for DaisyUI 5 (Tailwind CSS).
 
 The CSS frameworks themselves are not bundled. Applications must load the corresponding assets.
 

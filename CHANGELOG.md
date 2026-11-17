@@ -1,5 +1,8 @@
 # django-siteforms changelog
 
+### Unreleased
+* ++ Added Daisyui composer for DaisyUI 5 (Tailwind CSS) theming.
+
 ### v1.3.0 [2026-09-12]
 * ++ Allow initial values to be applied by filtering forms (closes #15).
 * ** Do not duplicate Bootstrap validation feedback in columns mode (closes #12).
