@@ -1,6 +1,6 @@
 from django.forms import (
-    BoundField, CheckboxInput, CheckboxSelectMultiple, ClearableFileInput, FileInput, RadioSelect, Select, SelectMultiple,
-    Textarea,
+    BoundField, CheckboxInput, CheckboxSelectMultiple, ClearableFileInput, FileInput, RadioSelect, Select,
+    SelectMultiple, Textarea,
 )
 
 from .base import FormComposer, TypeAttrs, ALL_FIELDS, ALL_GROUPS, FORM, SUBMIT, FIELDS_READONLY
