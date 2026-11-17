@@ -1,0 +1,15 @@
+[project]
+name = "siteforms-demo"
+version = "1.0.0"
+description = "django-siteforms demo project"
+requires-python = ">=3.10"
+dependencies = [
+    "django>=5.2",
+    "django-siteforms",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+django-siteforms = { path = "..", editable = true }

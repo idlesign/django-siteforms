@@ -4,7 +4,11 @@
 
 This Django project demonstrates siteforms basic features.
 
-Expects Python 3.10+ and Django 3.2+.
+Expects Python 3.10+ and Django 5.2+.
+
+The project uses [uv](https://docs.astral.sh/uv/) for dependency management
+and installs django-siteforms from the local sources (repository root),
+so package changes are visible right away.
 
 ## How to run
 
@@ -15,8 +19,8 @@ Expects Python 3.10+ and Django 3.2+.
 
 ### Manually
 
-1.  Install the requirements with `pip install -r requirements.txt`
-2.  Run the server `python manage.py runserver`
+1.  Install the dependencies with `uv sync`
+2.  Run the server `uv run python manage.py runserver`
 3.  Go to <http://localhost:8000>
 
 ### Admin

@@ -1,6 +1,7 @@
 from siteforms.composers.base import FormComposer
 from siteforms.composers.bootstrap4 import Bootstrap4, FORM, ALL_FIELDS
 from siteforms.composers.bootstrap5 import Bootstrap5
+from siteforms.composers.daisyui import Daisyui
 from siteforms.toolbox import ModelForm, Form, fields, FilteringModelForm
 from .models import Article, Author
 from .utils import render_themed
@@ -10,6 +11,7 @@ THEMES = {
     'none': ('No CSS', (FormComposer,)),
     'bootstrap4': ('Bootstrap 4', (Bootstrap4,)),
     'bootstrap5': ('Bootstrap 5', (Bootstrap5,)),
+    'daisyui': ('DaisyUI', (Daisyui,)),
 }
 
 
@@ -63,6 +65,9 @@ opts = {
     # bs5
     'opt_labels_floating': (True, False),
     'opt_feedback_valid': (True, False),
+
+    # daisyui
+    'opt_checkbox_toggle': (True, False),
 }
 
 
