@@ -1,6 +1,6 @@
 # django-siteforms changelog
 
-### Unreleased
+### v1.4.0 [2026-11-17]
 * ++ Added Daisyui composer for DaisyUI 5 (Tailwind CSS) theming.
 
 ### v1.3.0 [2026-09-12]
